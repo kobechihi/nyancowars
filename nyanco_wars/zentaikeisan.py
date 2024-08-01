@@ -39,7 +39,7 @@ def calculate_defense_time(location, teams):
 
 def main():
 
-    st.title("戦力計算 & 防衛時間計算 & ギルドメンバー登録ツール")
+    st.title("にゃんこウォーズ計算ツール")
 
     # デバフ計算（戦力計算）
 
