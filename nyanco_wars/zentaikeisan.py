@@ -2,6 +2,8 @@ import streamlit as st
 
 import pandas as pd
 
+import numpy as np
+
 def calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin):
 
     level_decrease = kill_count * original_level * 0.0024
@@ -37,6 +39,32 @@ def calculate_defense_time(location, teams):
     seconds = total_seconds % 60
 
     return minutes, seconds
+
+def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally_kakin, opponent_kakin):
+
+    target_power = opponent_power
+
+    if disadvantage:
+
+        target_power *= 1.25
+
+    if ally_kakin:
+
+        target_power /= 1.125
+
+    if opponent_kakin:
+
+        target_power *= 1.125
+
+    if ally_power >= target_power:
+
+        return 0
+
+    required_debuff = (target_power - ally_power) / ally_power
+
+    required_kills = int(required_debuff / (0.0024 * ally_level))
+
+    return required_kills
 
 def main():
 
@@ -80,7 +108,7 @@ def main():
 
     if 'my_team' not in st.session_state:
 
-        st.session_state.my_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性', '課金'])
+        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性', '課金', 'レベル'])
 
     if 'opponent_team' not in st.session_state:
 
@@ -96,11 +124,11 @@ def main():
 
         with col1:
 
-            guild_name = st.text_input("ギルド名", key="my_guild")
-
             name = st.text_input("名前", key="my_name")
 
             max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="my_power")
+
+            level = st.number_input("レベル", min_value=1, max_value=200, value=200, step=1, key="my_level")
 
         with col2:
 
@@ -114,15 +142,15 @@ def main():
 
         new_data = pd.DataFrame({
 
-            'ギルド名': [guild_name],
-
             '名前': [name],
 
             '最高戦力': [f"{max_power}万"],
 
             '属性': [attribute],
 
-            '課金': [kakin]
+            '課金': [kakin],
+
+            'レベル': [level]
 
         })
 
@@ -180,7 +208,7 @@ def main():
 
     st.dataframe(st.session_state.opponent_team)
 
-    # デバフ計算と勝利可能メンバーの表示
+    # デバフ逆算
 
     if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
 
@@ -190,37 +218,47 @@ def main():
 
             st.subheader(f"対戦相手: {opponent['名前']} (戦力: {opponent['最高戦力']})")
 
+            opponent_power = float(opponent['最高戦力'].rstrip('万'))
+
+            results = []
+
             for _, ally in st.session_state.my_team.iterrows():
 
-                original_power = float(ally['最高戦力'].rstrip('万'))
+                ally_power = float(ally['最高戦力'].rstrip('万'))
 
-                opponent_power = float(opponent['最高戦力'].rstrip('万'))
+                ally_level = ally['レベル']
 
-                required_debuff = max(0, (opponent_power - original_power) / opponent_power)
+                disadvantage = (ally['属性'] == "火" and opponent['属性'] == "水") or \
 
-                required_kills = int(required_debuff / (0.0024 * 200))  # Assuming level 200 for simplicity
+                               (ally['属性'] == "水" and opponent['属性'] == "木") or \
 
-                st.write(f"{ally['名前']} (戦力: {ally['最高戦力']}):")
+                               (ally['属性'] == "木" and opponent['属性'] == "火")
 
-                if original_power > opponent_power:
+                required_kills = calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally['課金'], opponent['課金'])
 
-                    st.write(f"  勝利可能！ デバフ不要")
+                results.append({
 
-                else:
+                    '名前': ally['名前'],
 
-                    st.write(f"  必要なデバフ: {required_debuff:.2%}")
+                    '戦力': ally['最高戦力'],
 
-                    st.write(f"  必要なKILL数(概算): {required_kills}")
+                    '必要KILL数': required_kills
 
-                # 課金状況による補正
+                })
 
-                if ally['課金'] and not opponent['課金']:
+            # 必要KILL数が少ない順に並べ替えて上位3名を表示
 
-                    st.write("  課金による有利: 必要なKILL数が少なくなる可能性があります")
+            results_df = pd.DataFrame(results)
 
-                elif not ally['課金'] and opponent['課金']:
+            results_df = results_df.sort_values('必要KILL数')
 
-                    st.write("  課金による不利: 必要なKILL数が多くなる可能性があります")
+            top_3 = results_df.head(3)
+
+            st.write("推奨攻撃メンバー（必要KILL数が少ない順）：")
+
+            for _, row in top_3.iterrows():
+
+                st.write(f"  {row['名前']} (戦力: {row['戦力']}) - 必要KILL数: {row['必要KILL数']}")
 
 if __name__ == "__main__":
 
