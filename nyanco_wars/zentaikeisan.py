@@ -14,7 +14,7 @@ def calculate_debuff(kill_count, original_level, original_power, disadvantage, k
 
     if kakin:
 
-        debuff_power *= 1.13
+        debuff_power *= 1.125
 
     return level_decrease, debuff_power
 
