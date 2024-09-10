@@ -40,7 +40,7 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
-def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally_kakin, opponent_kakin):
+def calculate_required_teams(ally_power, opponent_power, ally_level, disadvantage, ally_kakin, opponent_kakin):
 
     target_power = opponent_power
 
@@ -58,13 +58,15 @@ def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantag
 
     if ally_power >= target_power:
 
-        return 0
+        return 1
 
     required_debuff = (target_power - ally_power) / ally_power
 
-    required_kills = int(required_debuff / (0.0024 * ally_level))
+    required_kills = required_debuff / (0.0024 * ally_level)
 
-    return required_kills
+    required_teams = max(1, int(np.ceil(required_kills / 14)))  # 1班あたり最大14回攻撃可能と仮定
+
+    return required_teams
 
 def main():
 
@@ -208,11 +210,11 @@ def main():
 
     st.dataframe(st.session_state.opponent_team)
 
-    # デバフ逆算
+    # デバフ逆算（必要な班数）
 
     if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
 
-        st.header("デバフ逆算")
+        st.header("デバフ逆算（必要な班数）")
 
         for _, opponent in st.session_state.opponent_team.iterrows():
 
@@ -234,7 +236,7 @@ def main():
 
                                (ally['属性'] == "木" and opponent['属性'] == "火")
 
-                required_kills = calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally['課金'], opponent['課金'])
+                required_teams = calculate_required_teams(ally_power, opponent_power, ally_level, disadvantage, ally['課金'], opponent['課金'])
 
                 results.append({
 
@@ -242,23 +244,23 @@ def main():
 
                     '戦力': ally['最高戦力'],
 
-                    '必要KILL数': required_kills
+                    '必要班数': required_teams
 
                 })
 
-            # 必要KILL数が少ない順に並べ替えて上位3名を表示
+            # 必要班数が少ない順に並べ替えて上位3名を表示
 
             results_df = pd.DataFrame(results)
 
-            results_df = results_df.sort_values('必要KILL数')
+            results_df = results_df.sort_values('必要班数')
 
             top_3 = results_df.head(3)
 
-            st.write("推奨攻撃メンバー（必要KILL数が少ない順）：")
+            st.write("推奨攻撃メンバー（必要班数が少ない順）：")
 
             for _, row in top_3.iterrows():
 
-                st.write(f"  {row['名前']} (戦力: {row['戦力']}) - 必要KILL数: {row['必要KILL数']}")
+                st.write(f"  {row['名前']} (戦力: {row['戦力']}) - 必要班数: {row['必要班数']}")
 
 if __name__ == "__main__":
 
