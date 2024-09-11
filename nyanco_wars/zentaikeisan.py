@@ -229,9 +229,7 @@ def main():
                 ally_level = ally['レベル']
 
                 disadvantage = (ally['属性'] == "火" and opponent['属性'] == "水") or \
-
                                (ally['属性'] == "水" and opponent['属性'] == "木") or \
-
                                (ally['属性'] == "木" and opponent['属性'] == "火")
 
                 required_kills = calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally['課金'], opponent['課金'])
