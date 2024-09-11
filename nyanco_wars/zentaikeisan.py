@@ -50,7 +50,7 @@ def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantag
 
     if ally_kakin:
 
-        target_power /= 1.125
+        ally_power *= 1.125
 
     if opponent_kakin:
 
@@ -60,11 +60,13 @@ def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantag
 
         return 0
 
-    required_debuff = (target_power - ally_power) / ally_power
+    power_ratio = target_power / ally_power
 
-    required_kills = int(required_debuff / (0.0024 * ally_level)) + 1
+    level_decrease_ratio = (power_ratio - 1) / power_ratio
 
-    return required_kills
+    required_kills = int(level_decrease_ratio / (0.0024 * ally_level)) + 1
+
+    return max(required_kills, 0)
 
 def main():
 
