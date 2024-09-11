@@ -43,9 +43,7 @@ def calculate_required_kills(ally_power, opponent_power, ally_attribute, opponen
                    (ally_attribute == "木" and opponent_attribute == "火")
 
     advantage = (ally_attribute == "水" and opponent_attribute == "火") or \
-
                 (ally_attribute == "木" and opponent_attribute == "水") or \
-
                 (ally_attribute == "火" and opponent_attribute == "木")
 
     if disadvantage:
