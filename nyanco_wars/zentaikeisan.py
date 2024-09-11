@@ -72,7 +72,7 @@ def main():
 
     # デバフ計算（戦力計算）
 
-    st.header("戦力計算[班]")
+    st.header("戦力計算")
 
     kill_count = st.number_input("KILL数を入力してください:", min_value=0, step=1, key="kill_count")
 
