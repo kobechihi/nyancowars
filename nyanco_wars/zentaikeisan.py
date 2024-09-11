@@ -1,3 +1,81 @@
+import streamlit as st
+
+import pandas as pd
+
+import numpy as np
+
+def calculate_debuff(kill_count, original_level, original_power, disadvantage):
+
+    level_decrease = kill_count * original_level * 0.0024
+
+    debuff_power = original_power * (original_level - level_decrease) / original_level
+
+    if disadvantage:
+
+        debuff_power *= 0.8
+
+    return level_decrease, debuff_power
+
+def calculate_defense_time(location, teams):
+
+    time_per_team = {
+
+        "にゃんタウン": 4,
+
+        "寮": 3,
+
+        "城": 2
+
+    }
+
+    total_seconds = teams * time_per_team[location]
+
+    minutes = total_seconds // 60
+
+    seconds = total_seconds % 60
+
+    return minutes, seconds
+
+def calculate_required_kills(ally_power, opponent_power, ally_attribute, opponent_attribute):
+
+    disadvantage = (ally_attribute == "火" and opponent_attribute == "水") or \
+
+                   (ally_attribute == "水" and opponent_attribute == "木") or \
+
+                   (ally_attribute == "木" and opponent_attribute == "火")
+
+    advantage = (ally_attribute == "水" and opponent_attribute == "火") or \
+
+                (ally_attribute == "木" and opponent_attribute == "水") or \
+
+                (ally_attribute == "火" and opponent_attribute == "木")
+
+    if disadvantage:
+
+        ally_power *= 0.8
+
+    elif advantage:
+
+        opponent_power *= 0.8
+
+    if ally_power >= opponent_power:
+
+        return 0
+
+    original_level = 200  # 仮定：元のレベルは200
+
+    kill_count = 0
+
+    current_power = ally_power
+
+    while current_power < opponent_power:
+
+        kill_count += 1
+
+        _, current_power = calculate_debuff(kill_count, original_level, ally_power, False)
+
+    return kill_count
+
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
