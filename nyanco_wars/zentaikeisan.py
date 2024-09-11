@@ -14,7 +14,7 @@ def calculate_debuff(kill_count, original_level, original_power, disadvantage):
 
         debuff_power *= 0.8
 
-    return level_decrease, debuff_power
+    return debuff_power
 
 def calculate_defense_time(location, teams):
 
@@ -39,11 +39,15 @@ def calculate_defense_time(location, teams):
 def calculate_required_kills(ally_power, opponent_power, ally_attribute, opponent_attribute):
 
     disadvantage = (ally_attribute == "火" and opponent_attribute == "水") or \
+
                    (ally_attribute == "水" and opponent_attribute == "木") or \
+
                    (ally_attribute == "木" and opponent_attribute == "火")
 
     advantage = (ally_attribute == "水" and opponent_attribute == "火") or \
+
                 (ally_attribute == "木" and opponent_attribute == "水") or \
+
                 (ally_attribute == "火" and opponent_attribute == "木")
 
     if disadvantage:
@@ -58,17 +62,13 @@ def calculate_required_kills(ally_power, opponent_power, ally_attribute, opponen
 
         return 0
 
-    original_level = 200  # 仮定：元のレベルは200
+    # 繰り返し計算の最適化
 
     kill_count = 0
 
-    current_power = ally_power
-
-    while current_power < opponent_power:
+    while ally_power * (1 - kill_count * 0.0024) < opponent_power:
 
         kill_count += 1
-
-        _, current_power = calculate_debuff(kill_count, original_level, ally_power, False)
 
     return kill_count
 
@@ -80,49 +80,41 @@ def main():
 
     if 'my_team' not in st.session_state:
 
-        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性', 'レベル'])
+        st.session_state.my_team = []
 
     if 'opponent_team' not in st.session_state:
 
-        st.session_state.opponent_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性'])
+        st.session_state.opponent_team = []
 
-    # ギルドメンバー登録フォーム
+    # 自チームメンバー登録フォーム
 
     st.header("自チームメンバー登録")
 
     with st.form(key='my_team_form'):
 
-        col1, col2 = st.columns(2)
+        name = st.text_input("名前", key="my_name")
 
-        with col1:
+        max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="my_power")
 
-            name = st.text_input("名前", key="my_name")
+        attribute = st.selectbox("属性", ["火", "水", "木"], key="my_attribute")
 
-            max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="my_power")
-
-        with col2:
-
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="my_attribute")
-
-            level = st.number_input("レベル", min_value=1, max_value=200, value=200, step=1, key="my_level")
+        level = st.number_input("レベル", min_value=1, max_value=200, value=200, step=1, key="my_level")
 
         submit_button = st.form_submit_button(label='自チームに登録')
 
     if submit_button:
 
-        new_data = pd.DataFrame({
+        st.session_state.my_team.append({
 
-            '名前': [name],
+            '名前': name,
 
-            '最高戦力': [f"{max_power}万"],
+            '最高戦力': f"{max_power}万",
 
-            '属性': [attribute],
+            '属性': attribute,
 
-            'レベル': [level]
+            'レベル': level
 
         })
-
-        st.session_state.my_team = pd.concat([st.session_state.my_team, new_data], ignore_index=True)
 
     # 対戦相手チームメンバー登録フォーム
 
@@ -130,57 +122,47 @@ def main():
 
     with st.form(key='opponent_team_form'):
 
-        col1, col2 = st.columns(2)
+        guild_name = st.text_input("ギルド名", key="opp_guild")
 
-        with col1:
+        name = st.text_input("名前", key="opp_name")
 
-            guild_name = st.text_input("ギルド名", key="opp_guild")
+        max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="opp_power")
 
-            name = st.text_input("名前", key="opp_name")
-
-        with col2:
-
-            max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="opp_power")
-
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
+        attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
 
         submit_button = st.form_submit_button(label='対戦相手チームに登録')
 
     if submit_button:
 
-        new_data = pd.DataFrame({
+        st.session_state.opponent_team.append({
 
-            'ギルド名': [guild_name],
+            'ギルド名': guild_name,
 
-            '名前': [name],
+            '名前': name,
 
-            '最高戦力': [f"{max_power}万"],
+            '最高戦力': f"{max_power}万",
 
-            '属性': [attribute]
+            '属性': attribute
 
         })
-
-        st.session_state.opponent_team = pd.concat([st.session_state.opponent_team, new_data], ignore_index=True)
 
     # 自チームと対戦相手チームのデータ表示
 
     st.subheader("自チームメンバー")
 
-    st.dataframe(st.session_state.my_team)
+    st.write(st.session_state.my_team)
 
     st.subheader("対戦相手チームメンバー")
 
-    st.dataframe(st.session_state.opponent_team)
+    st.write(st.session_state.opponent_team)
 
     # デバフ逆算
 
-    if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
+    if st.session_state.my_team and st.session_state.opponent_team:
 
         st.header("デバフ逆算")
 
-        all_results = []
-
-        for _, opponent in st.session_state.opponent_team.iterrows():
+        for opponent in st.session_state.opponent_team:
 
             st.subheader(f"対戦相手: {opponent['名前']} (戦力: {opponent['最高戦力']}, 属性: {opponent['属性']})")
 
@@ -188,7 +170,7 @@ def main():
 
             results = []
 
-            for _, ally in st.session_state.my_team.iterrows():
+            for ally in st.session_state.my_team:
 
                 ally_power = float(ally['最高戦力'].rstrip('万'))
 
@@ -208,17 +190,13 @@ def main():
 
             # 必要KILL数が少ない順に並べ替え
 
-            results_df = pd.DataFrame(results)
+            results.sort(key=lambda x: x['必要KILL数'])
 
-            results_df = results_df.sort_values('必要KILL数')
-
-            # 上位3名を表示
-
-            top_results = results_df.head(3)
+            top_results = results[:3]  # 上位3名を表示
 
             st.write("攻撃メンバー（必要KILL数順）：")
 
-            for _, row in top_results.iterrows():
+            for row in top_results:
 
                 st.write(f"  {row['名前']} (戦力: {row['戦力']}, 属性: {row['属性']}) - 必要KILL数: {row['必要KILL数']}")
 
