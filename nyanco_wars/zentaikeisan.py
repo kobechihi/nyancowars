@@ -60,13 +60,13 @@ def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantag
 
         return 0
 
-    power_ratio = target_power / ally_power
+    power_difference = target_power - ally_power
 
-    level_decrease_ratio = (power_ratio - 1) / power_ratio
+    kill_power = ally_power * 0.0024
 
-    required_kills = int(level_decrease_ratio / (0.0024 * ally_level)) + 1
+    required_kills = int(np.ceil(power_difference / kill_power))
 
-    return max(required_kills, 0)
+    return required_kills
 
 def main():
 
@@ -231,7 +231,9 @@ def main():
                 ally_level = ally['レベル']
 
                 disadvantage = (ally['属性'] == "火" and opponent['属性'] == "水") or \
+
                                (ally['属性'] == "水" and opponent['属性'] == "木") or \
+
                                (ally['属性'] == "木" and opponent['属性'] == "火")
 
                 required_kills = calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally['課金'], opponent['課金'])
