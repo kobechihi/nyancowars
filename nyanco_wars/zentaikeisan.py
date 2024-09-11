@@ -4,7 +4,7 @@ import pandas as pd
 
 import numpy as np
 
-def calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin):
+def calculate_debuff(kill_count, original_level, original_power, disadvantage):
 
     level_decrease = kill_count * original_level * 0.0024
 
@@ -12,11 +12,7 @@ def calculate_debuff(kill_count, original_level, original_power, disadvantage, k
 
     if disadvantage:
 
-        debuff_power *= 1.25
-
-    if kakin:
-
-        debuff_power *= 1.125
+        debuff_power *= 0.8
 
     return level_decrease, debuff_power
 
@@ -40,33 +36,45 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
-def calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally_kakin, opponent_kakin):
+def calculate_required_kills(ally_power, opponent_power, ally_attribute, opponent_attribute):
 
-    target_power = opponent_power
+    disadvantage = (ally_attribute == "火" and opponent_attribute == "水") or \
+
+                   (ally_attribute == "水" and opponent_attribute == "木") or \
+
+                   (ally_attribute == "木" and opponent_attribute == "火")
+
+    advantage = (ally_attribute == "水" and opponent_attribute == "火") or \
+
+                (ally_attribute == "木" and opponent_attribute == "水") or \
+
+                (ally_attribute == "火" and opponent_attribute == "木")
 
     if disadvantage:
 
-        target_power *= 1.25
+        ally_power *= 0.8
 
-    if ally_kakin:
+    elif advantage:
 
-        ally_power *= 1.125
+        opponent_power *= 0.8
 
-    if opponent_kakin:
-
-        target_power *= 1.125
-
-    if ally_power >= target_power:
+    if ally_power >= opponent_power:
 
         return 0
 
-    power_difference = target_power - ally_power
+    original_level = 200  # 仮定：元のレベルは200
 
-    kill_power = ally_power * 0.0024
+    kill_count = 0
 
-    required_kills = int(np.ceil(power_difference / kill_power))
+    current_power = ally_power
 
-    return required_kills
+    while current_power < opponent_power:
+
+        kill_count += 1
+
+        _, current_power = calculate_debuff(kill_count, original_level, ally_power, False)
+
+    return kill_count
 
 def main():
 
@@ -84,11 +92,9 @@ def main():
 
     disadvantage = st.checkbox("不利属性ですか？", key="disadvantage")
 
-    kakin = st.checkbox("魔石・装備のレベルは高いですか？", key="kakin")
-
     if st.button("戦力計算"):
 
-        level_decrease, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin)
+        level_decrease, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}万")
 
@@ -110,11 +116,11 @@ def main():
 
     if 'my_team' not in st.session_state:
 
-        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性', '課金', 'レベル'])
+        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性', 'レベル'])
 
     if 'opponent_team' not in st.session_state:
 
-        st.session_state.opponent_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性', '課金'])
+        st.session_state.opponent_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性'])
 
     # ギルドメンバー登録フォーム
 
@@ -130,13 +136,11 @@ def main():
 
             max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="my_power")
 
-            level = st.number_input("レベル", min_value=1, max_value=200, value=200, step=1, key="my_level")
-
         with col2:
 
             attribute = st.selectbox("属性", ["火", "水", "木"], key="my_attribute")
 
-            kakin = st.checkbox("課金プレイヤーですか？", key="my_kakin")
+            level = st.number_input("レベル", min_value=1, max_value=200, value=200, step=1, key="my_level")
 
         submit_button = st.form_submit_button(label='自チームに登録')
 
@@ -149,8 +153,6 @@ def main():
             '最高戦力': [f"{max_power}万"],
 
             '属性': [attribute],
-
-            '課金': [kakin],
 
             'レベル': [level]
 
@@ -172,13 +174,11 @@ def main():
 
             name = st.text_input("名前", key="opp_name")
 
-            max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="opp_power")
-
         with col2:
 
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
+            max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="opp_power")
 
-            kakin = st.checkbox("課金プレイヤーですか？", key="opp_kakin")
+            attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
 
         submit_button = st.form_submit_button(label='対戦相手チームに登録')
 
@@ -192,9 +192,7 @@ def main():
 
             '最高戦力': [f"{max_power}万"],
 
-            '属性': [attribute],
-
-            '課金': [kakin]
+            '属性': [attribute]
 
         })
 
@@ -218,7 +216,7 @@ def main():
 
         for _, opponent in st.session_state.opponent_team.iterrows():
 
-            st.subheader(f"対戦相手: {opponent['名前']} (戦力: {opponent['最高戦力']})")
+            st.subheader(f"対戦相手: {opponent['名前']} (戦力: {opponent['最高戦力']}, 属性: {opponent['属性']})")
 
             opponent_power = float(opponent['最高戦力'].rstrip('万'))
 
@@ -228,13 +226,7 @@ def main():
 
                 ally_power = float(ally['最高戦力'].rstrip('万'))
 
-                ally_level = ally['レベル']
-
-                disadvantage = (ally['属性'] == "火" and opponent['属性'] == "水") or \
-                               (ally['属性'] == "水" and opponent['属性'] == "木") or \
-                               (ally['属性'] == "木" and opponent['属性'] == "火")
-
-                required_kills = calculate_required_kills(ally_power, opponent_power, ally_level, disadvantage, ally['課金'], opponent['課金'])
+                required_kills = calculate_required_kills(ally_power, opponent_power, ally['属性'], opponent['属性'])
 
                 results.append({
 
@@ -242,23 +234,23 @@ def main():
 
                     '戦力': ally['最高戦力'],
 
+                    '属性': ally['属性'],
+
                     '必要KILL数': required_kills
 
                 })
 
-            # 必要KILL数が少ない順に並べ替えて上位3名を表示
+            # 必要KILL数が少ない順に並べ替えて表示
 
             results_df = pd.DataFrame(results)
 
             results_df = results_df.sort_values('必要KILL数')
 
-            top_3 = results_df.head(3)
+            st.write("攻撃メンバー（必要KILL数順）：")
 
-            st.write("推奨攻撃メンバー（必要KILL数が少ない順）：")
+            for _, row in results_df.iterrows():
 
-            for _, row in top_3.iterrows():
-
-                st.write(f"  {row['名前']} (戦力: {row['戦力']}) - 必要KILL数: {row['必要KILL数']}")
+                st.write(f"  {row['名前']} (戦力: {row['戦力']}, 属性: {row['属性']}) - 必要KILL数: {row['必要KILL数']}")
 
 if __name__ == "__main__":
 
