@@ -180,36 +180,6 @@ def main():
 
     st.dataframe(st.session_state.opponent_team)
 
-    # デバフ計算と勝利可能メンバーの表示
-
-    if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
-
-        st.header("デバフ計算と勝利可能メンバー")
-
-        for _, opponent in st.session_state.opponent_team.iterrows():
-
-            st.subheader(f"対戦相手: {opponent['名前']} (戦力: {opponent['最高戦力']}万)")
-
-            for _, ally in st.session_state.my_team.iterrows():
-
-                original_power = ally['最高戦力']
-
-                required_debuff = max(0, (original_power - opponent['最高戦力']) / original_power)
-
-                required_kills = int(required_debuff / (0.0024 * 200))  # Assuming level 200 for simplicity
-
-                st.write(f"{ally['名前']} (戦力: {original_power}万):")
-
-                if original_power > opponent['最高戦力']:
-
-                    st.write(f"  勝利可能！ デバフ不要")
-
-                else:
-
-                    st.write(f"  必要なデバフ: {required_debuff:.2%}")
-
-                    st.write(f"  必要なKILL数(概算): {required_kills}")
-
 if __name__ == "__main__":
 
     main()
