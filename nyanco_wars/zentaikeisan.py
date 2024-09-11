@@ -39,15 +39,11 @@ def calculate_defense_time(location, teams):
 def calculate_required_kills(ally_power, opponent_power, ally_attribute, opponent_attribute):
 
     disadvantage = (ally_attribute == "火" and opponent_attribute == "水") or \
-
                    (ally_attribute == "水" and opponent_attribute == "木") or \
-
                    (ally_attribute == "木" and opponent_attribute == "火")
 
     advantage = (ally_attribute == "水" and opponent_attribute == "火") or \
-
                 (ally_attribute == "木" and opponent_attribute == "水") or \
-
                 (ally_attribute == "火" and opponent_attribute == "木")
 
     if disadvantage:
