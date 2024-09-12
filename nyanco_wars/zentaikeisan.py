@@ -4,7 +4,7 @@ import pandas as pd
 
 import numpy as np
 
-def calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin):
+def calculate_debuff(kill_count, original_level, original_power, disadvantage):
 
     level_decrease = kill_count * original_level * 0.0024
 
@@ -13,10 +13,6 @@ def calculate_debuff(kill_count, original_level, original_power, disadvantage, k
     if disadvantage:
 
         debuff_power *= 1.25
-
-    if kakin:
-
-        debuff_power *= 1.15
 
     return level_decrease, debuff_power
 
@@ -40,11 +36,11 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
-def calculate_required_kills(original_power, target_power, original_level, disadvantage, kakin):
+def calculate_required_kills(original_power, target_power, original_level, disadvantage):
 
     def objective(kill_count):
 
-        _, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin)
+        _, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage)
 
         return debuff_power - target_power
 
@@ -82,11 +78,9 @@ def main():
 
     disadvantage = st.checkbox("不利属性ですか？", key="disadvantage")
 
-    kakin = st.checkbox("魔石・装備のレベルは高いですか？", key="kakin")
-
     if st.button("戦力計算"):
 
-        level_decrease, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin)
+        level_decrease, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
@@ -108,11 +102,11 @@ def main():
 
     if 'my_team' not in st.session_state:
 
-        st.session_state.my_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性', '班数'])
+        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
 
     if 'opponent_team' not in st.session_state:
 
-        st.session_state.opponent_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性', '班数'])
+        st.session_state.opponent_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性'])
 
     # 自チームメンバー登録フォーム
 
@@ -120,21 +114,11 @@ def main():
 
     with st.form(key='my_team_form'):
 
-        col1, col2 = st.columns(2)
+        name = st.text_input("名前", key="my_name")
 
-        with col1:
+        max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="my_power")
 
-            guild_name = st.text_input("ギルド名", key="my_guild")
-
-            name = st.text_input("名前", key="my_name")
-
-            max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="my_power")
-
-        with col2:
-
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="my_attribute")
-
-            team_count = st.number_input("班数", min_value=1, step=1, key="my_team_count")
+        attribute = st.selectbox("属性", ["火", "水", "木"], key="my_attribute")
 
         submit_button = st.form_submit_button(label='自チームに登録')
 
@@ -142,15 +126,11 @@ def main():
 
         new_data = pd.DataFrame({
 
-            'ギルド名': [guild_name],
-
             '名前': [name],
 
             '最高戦力': [max_power],
 
-            '属性': [attribute],
-
-            '班数': [team_count]
+            '属性': [attribute]
 
         })
 
@@ -162,21 +142,13 @@ def main():
 
     with st.form(key='opponent_team_form'):
 
-        col1, col2 = st.columns(2)
+        guild_name = st.text_input("ギルド名", key="opp_guild")
 
-        with col1:
+        name = st.text_input("名前", key="opp_name")
 
-            guild_name = st.text_input("ギルド名", key="opp_guild")
+        max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="opp_power")
 
-            name = st.text_input("名前", key="opp_name")
-
-            max_power = st.number_input("最高戦力", min_value=0.0, step=0.1, key="opp_power")
-
-        with col2:
-
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
-
-            team_count = st.number_input("班数", min_value=1, step=1, key="opp_team_count")
+        attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
 
         submit_button = st.form_submit_button(label='対戦相手チームに登録')
 
@@ -190,9 +162,7 @@ def main():
 
             '最高戦力': [max_power],
 
-            '属性': [attribute],
-
-            '班数': [team_count]
+            '属性': [attribute]
 
         })
 
@@ -207,7 +177,6 @@ def main():
     st.subheader("対戦相手チームメンバー")
 
     st.dataframe(st.session_state.opponent_team)
- 
 
     # デバフ逆算機能
 
@@ -237,11 +206,7 @@ def main():
 
                                                key=f"disadvantage_{my_member['名前']}_{opp_member['名前']}")
 
-                    kakin = st.checkbox(f"{my_member['名前']}の魔石・装備のレベルは高いですか？", 
-
-                                        key=f"kakin_{my_member['名前']}_{opp_member['名前']}")
-
-                    required_kills = calculate_required_kills(original_power, target_power, original_level, disadvantage, kakin)
+                    required_kills = calculate_required_kills(original_power, target_power, original_level, disadvantage)
 
                     st.write(f"{my_member['名前']}が{opp_member['名前']}(戦力: {target_power})と同じ戦力になるために必要なKILL数: {required_kills}")
 
