@@ -188,9 +188,9 @@ def main():
 
             st.write("自チームメンバーが敵対チームメンバーの戦力と同じになるKILL数を計算します。")
 
-            for _, my_member in st.session_state.my_team.iterrows():
+            results = []
 
-                st.subheader(f"{my_member['名前']}のデバフ逆算")
+            for _, my_member in st.session_state.my_team.iterrows():
 
                 for _, opp_member in st.session_state.opponent_team.iterrows():
 
@@ -198,13 +198,39 @@ def main():
 
                     target_power = opp_member['最高戦力']
 
-                    disadvantage = st.checkbox(f"{my_member['名前']}が{opp_member['名前']}に対して不利属性ですか？", 
+                    disadvantage = (my_member['属性'] == '火' and opp_member['属性'] == '水') or \
 
-                                               key=f"disadvantage_{my_member['名前']}_{opp_member['名前']}")
+                                   (my_member['属性'] == '水' and opp_member['属性'] == '木') or \
+
+                                   (my_member['属性'] == '木' and opp_member['属性'] == '火')
 
                     required_kills = calculate_required_kills(original_power, target_power, disadvantage)
 
-                    st.write(f"{my_member['名前']}が{opp_member['名前']}(戦力: {target_power})と同じ戦力になるために必要なKILL数: {required_kills}")
+                    results.append({
+
+                        '自チーム': my_member['名前'],
+
+                        '敵チーム': opp_member['名前'],
+
+                        'KILL数': required_kills,
+
+                        '自チーム戦力': original_power,
+
+                        '敵チーム戦力': target_power
+
+                    })
+
+            # 結果をKILL数で昇順にソートし、自チーム戦力 > 敵チーム戦力のものだけをフィルタリング
+
+            sorted_results = sorted([r for r in results if r['自チーム戦力'] > r['敵チーム戦力']], key=lambda x: x['KILL数'])
+
+            # 上位3名を表示
+
+            st.subheader("デバフ逆算結果 (上位3名)")
+
+            for result in sorted_results[:3]:
+
+                st.write(f"{result['自チーム']} vs {result['敵チーム']}: KILL数 {result['KILL数']}")
 
         else:
 
