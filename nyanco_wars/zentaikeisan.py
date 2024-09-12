@@ -199,9 +199,7 @@ def main():
                     target_power = opp_member['最高戦力']
 
                     disadvantage = (my_member['属性'] == '火' and opp_member['属性'] == '水') or \
-
                                    (my_member['属性'] == '水' and opp_member['属性'] == '木') or \
-
                                    (my_member['属性'] == '木' and opp_member['属性'] == '火')
 
                     required_kills = calculate_required_kills(original_power, target_power, disadvantage)
