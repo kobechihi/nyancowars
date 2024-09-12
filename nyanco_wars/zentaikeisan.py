@@ -2,6 +2,8 @@ import streamlit as st
 
 import pandas as pd
 
+import numpy as np
+
 def calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin):
 
     level_decrease = kill_count * original_level * 0.0024
@@ -37,6 +39,32 @@ def calculate_defense_time(location, teams):
     seconds = total_seconds % 60
 
     return minutes, seconds
+
+def calculate_required_kills(original_power, target_power, original_level, disadvantage, kakin):
+
+    def objective(kill_count):
+
+        _, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage, kakin)
+
+        return debuff_power - target_power
+
+    # 二分探索法でKILL数を見つける
+
+    low, high = 0, 1000
+
+    while high - low > 1:
+
+        mid = (low + high) // 2
+
+        if objective(mid) > 0:
+
+            low = mid
+
+        else:
+
+            high = mid
+
+    return high
 
 def main():
 
@@ -80,7 +108,7 @@ def main():
 
     if 'my_team' not in st.session_state:
 
-        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性', '班数'])
+        st.session_state.my_team = pd.DataFrame(columns=['ギルド名', '名前', '最高戦力', '属性', '班数'])
 
     if 'opponent_team' not in st.session_state:
 
@@ -95,6 +123,8 @@ def main():
         col1, col2 = st.columns(2)
 
         with col1:
+
+            guild_name = st.text_input("ギルド名", key="my_guild")
 
             name = st.text_input("名前", key="my_name")
 
@@ -111,6 +141,8 @@ def main():
     if submit_button:
 
         new_data = pd.DataFrame({
+
+            'ギルド名': [guild_name],
 
             '名前': [name],
 
@@ -175,6 +207,51 @@ def main():
     st.subheader("対戦相手チームメンバー")
 
     st.dataframe(st.session_state.opponent_team)
+ 
+
+    # デバフ逆算機能
+
+    st.header("デバフ逆算")
+
+    if 'my_team' in st.session_state and 'opponent_team' in st.session_state:
+
+        if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
+
+            st.write("自チームメンバーが敵対チームメンバーの戦力と同じになるKILL数を計算します。")
+
+            for _, my_member in st.session_state.my_team.iterrows():
+
+                st.subheader(f"{my_member['名前']}のデバフ逆算")
+
+                for _, opp_member in st.session_state.opponent_team.iterrows():
+
+                    original_power = my_member['最高戦力']
+
+                    target_power = opp_member['最高戦力']
+
+                    original_level = st.number_input(f"{my_member['名前']}のもとのレベル[戦力400万以上なら200が目安]:", 
+
+                                                     min_value=0.0, step=0.1, key=f"level_{my_member['名前']}_{opp_member['名前']}")
+
+                    disadvantage = st.checkbox(f"{my_member['名前']}が{opp_member['名前']}に対して不利属性ですか？", 
+
+                                               key=f"disadvantage_{my_member['名前']}_{opp_member['名前']}")
+
+                    kakin = st.checkbox(f"{my_member['名前']}の魔石・装備のレベルは高いですか？", 
+
+                                        key=f"kakin_{my_member['名前']}_{opp_member['名前']}")
+
+                    required_kills = calculate_required_kills(original_power, target_power, original_level, disadvantage, kakin)
+
+                    st.write(f"{my_member['名前']}が{opp_member['名前']}(戦力: {target_power})と同じ戦力になるために必要なKILL数: {required_kills}")
+
+        else:
+
+            st.write("自チームメンバーと敵対チームメンバーを登録してください。")
+
+    else:
+
+        st.write("自チームメンバーと敵対チームメンバーを登録してください。")
 
 if __name__ == "__main__":
 
