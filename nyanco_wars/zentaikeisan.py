@@ -40,10 +40,33 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
+def calculate_kills_needed(my_team, opponent_team):
+
+    kills_needed = []
+
+    for _, opp_row in opponent_team.iterrows():
+
+        opponent_power = opp_row['最高戦力']
+
+        required_kills = []
+
+        for _, my_row in my_team.iterrows():
+
+            my_power = my_row['最高戦力']
+
+            if my_power >= opponent_power:
+
+                kills = (my_power / 200) * (1 / 0.0024)  # 逆算
+
+                required_kills.append(kills)
+
+        kills_needed.append(required_kills)
+
+    return kills_needed
+
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
-
 
     # デバフ計算（戦力計算）
 
@@ -154,7 +177,7 @@ def main():
             '最高戦力': [max_power],
 
             '属性': [attribute],
-            
+
         })
 
         st.session_state.opponent_team = pd.concat([st.session_state.opponent_team, new_data], ignore_index=True)
@@ -168,6 +191,24 @@ def main():
     st.subheader("対戦相手チームメンバー")
 
     st.dataframe(st.session_state.opponent_team)
+
+    # デバフ逆算機能
+
+    st.header("デバフ逆算")
+
+    if st.session_state.my_team.empty or st.session_state.opponent_team.empty:
+
+        st.warning("自チームと対戦相手チームのメンバーを登録してください。")
+
+    else:
+
+        kills_needed = calculate_kills_needed(st.session_state.my_team, st.session_state.opponent_team)
+
+        result_df = pd.DataFrame(kills_needed, columns=st.session_state.opponent_team['名前'])
+
+        st.subheader("必要KILL数")
+
+        st.dataframe(result_df)
 
 if __name__ == "__main__":
 
