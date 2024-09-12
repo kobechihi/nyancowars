@@ -4,11 +4,13 @@ import pandas as pd
 
 import numpy as np
 
-def calculate_debuff(kill_count, original_level, original_power, disadvantage):
+FIXED_LEVEL = 200
 
-    level_decrease = kill_count * original_level * 0.0024
+def calculate_debuff(kill_count, original_power, disadvantage):
 
-    debuff_power = original_power * (original_level - level_decrease) / original_level
+    level_decrease = kill_count * FIXED_LEVEL * 0.0024
+
+    debuff_power = original_power * (FIXED_LEVEL - level_decrease) / FIXED_LEVEL
 
     if disadvantage:
 
@@ -36,11 +38,11 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
-def calculate_required_kills(original_power, target_power, original_level, disadvantage):
+def calculate_required_kills(original_power, target_power, disadvantage):
 
     def objective(kill_count):
 
-        _, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage)
+        _, debuff_power = calculate_debuff(kill_count, original_power, disadvantage)
 
         return debuff_power - target_power
 
@@ -72,15 +74,13 @@ def main():
 
     kill_count = st.number_input("KILL数を入力してください:", min_value=0, step=1, key="kill_count")
 
-    original_level = st.number_input("もとのレベルを入力してください[戦力400万以上なら200が目安]:", min_value=0.0, step=0.1, key="original_level")
-
     original_power = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power")
 
     disadvantage = st.checkbox("不利属性ですか？", key="disadvantage")
 
     if st.button("戦力計算"):
 
-        level_decrease, debuff_power = calculate_debuff(kill_count, original_level, original_power, disadvantage)
+        level_decrease, debuff_power = calculate_debuff(kill_count, original_power, disadvantage)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
@@ -198,15 +198,11 @@ def main():
 
                     target_power = opp_member['最高戦力']
 
-                    original_level = st.number_input(f"{my_member['名前']}のもとのレベル[戦力400万以上なら200が目安]:", 
-
-                                                     min_value=0.0, step=0.1, key=f"level_{my_member['名前']}_{opp_member['名前']}")
-
                     disadvantage = st.checkbox(f"{my_member['名前']}が{opp_member['名前']}に対して不利属性ですか？", 
 
                                                key=f"disadvantage_{my_member['名前']}_{opp_member['名前']}")
 
-                    required_kills = calculate_required_kills(original_power, target_power, original_level, disadvantage)
+                    required_kills = calculate_required_kills(original_power, target_power, disadvantage)
 
                     st.write(f"{my_member['名前']}が{opp_member['名前']}(戦力: {target_power})と同じ戦力になるために必要なKILL数: {required_kills}")
 
