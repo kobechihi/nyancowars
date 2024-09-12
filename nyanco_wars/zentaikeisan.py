@@ -44,21 +44,6 @@ def main():
 
     st.title("にゃんこウォーズ計算ツール")
 
-    # チーム名登録
-
-    if 'team_name' not in st.session_state:
-
-        st.session_state.team_name = ""
-
-    st.header("自チーム名登録")
-
-    team_name = st.text_input("自チーム名を入力してください:", value=st.session_state.team_name)
-
-    if st.button("チーム名を保存"):
-
-        st.session_state.team_name = team_name
-
-        st.success(f"チーム名 '{team_name}' を保存しました！")
 
     # デバフ計算（戦力計算）
 
