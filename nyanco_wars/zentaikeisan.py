@@ -360,68 +360,6 @@ def main():
 
     st.dataframe(st.session_state.opponent_team)
 
-    # デバフ逆算機能
-
-    st.header("デバフ逆算")
-
-    if 'my_team' in st.session_state and 'opponent_team' in st.session_state:
-
-        if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
-
-            st.write("自チームメンバーが敵対チームメンバーの戦力と同じになるKILL数を計算します。")
-
-            results = []
-
-            for _, my_member in st.session_state.my_team.iterrows():
-
-                for _, opp_member in st.session_state.opponent_team.iterrows():
-
-                    original_power = my_member['最高戦力']
-
-                    target_power = opp_member['最高戦力']
-
-                    disadvantage = (my_member['属性'] == '火' and opp_member['属性'] == '水') or \
-
-                                   (my_member['属性'] == '水' and opp_member['属性'] == '木') or \
-
-                                   (my_member['属性'] == '木' and opp_member['属性'] == '火')
-
-                    required_kills = calculate_required_kills(original_power, target_power, disadvantage)
-
-                    results.append({
-
-                        '自チーム': my_member['名前'],
-
-                        '敵チーム': opp_member['名前'],
-
-                        'KILL数': required_kills,
-
-                        '自チーム戦力': original_power,
-
-                        '敵チーム戦力': target_power
-
-                    })
-
-            # 結果をKILL数で昇順にソートし、自チーム戦力 > 敵チーム戦力のものだけをフィルタリング
-
-            sorted_results = sorted([r for r in results if r['自チーム戦力'] > r['敵チーム戦力']], key=lambda x: x['KILL数'])
-
-            # 上位3名を表示
-
-            st.subheader("デバフ逆算結果 (上位3名)")
-
-            for result in sorted_results[:3]:
-
-                st.write(f"{result['自チーム']} vs {result['敵チーム']}: KILL数 {result['KILL数']}")
-
-        else:
-
-            st.write("自チームメンバーと敵対チームメンバーを登録してください。")
-
-    else:
-
-        st.write("自チームメンバーと敵対チームメンバーを登録してください。")
-
 if __name__ == "__main__":
 
     main()
