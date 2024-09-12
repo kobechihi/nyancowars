@@ -105,23 +105,17 @@ def main():
 
             attribute = st.selectbox("属性", ["火", "水", "木"], key="my_attribute")
 
-            team_count = st.number_input("班数", min_value=1, step=1, key="my_team_count")
-
         submit_button = st.form_submit_button(label='自チームに登録')
 
     if submit_button:
 
         new_data = pd.DataFrame({
 
-            'ギルド名': [st.session_state.team_name],
-
             '名前': [name],
 
             '最高戦力': [max_power],
 
             '属性': [attribute],
-
-            '班数': [team_count]
 
         })
 
@@ -147,8 +141,6 @@ def main():
 
             attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
 
-            team_count = st.number_input("班数", min_value=1, step=1, key="opp_team_count")
-
         submit_button = st.form_submit_button(label='対戦相手チームに登録')
 
     if submit_button:
@@ -162,9 +154,7 @@ def main():
             '最高戦力': [max_power],
 
             '属性': [attribute],
-
-            '班数': [team_count]
-
+            
         })
 
         st.session_state.opponent_team = pd.concat([st.session_state.opponent_team, new_data], ignore_index=True)
