@@ -20,6 +20,32 @@ def calculate_debuff(kill_count, original_power, disadvantage, kakin):
 
     return debuff_power
 
+def calculate_kill_count(original_power, debuff_power, disadvantage, kakin):
+
+    if original_power <= 0:
+
+        return -1  # 元の戦力が0またはマイナスの場合は到達不可能
+
+    kills = 0
+
+    while True:
+
+        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, kakin)
+
+        # 目標デバフ戦力に到達しているか確認
+
+        if current_debuff_power <= debuff_power:
+
+            return kills
+
+        kills += 1
+
+        # 無限ループ防止のため、ある程度のキル数に達したら終了
+
+        if kills > 1000:  # 例: 1000回で終了
+
+            return -1  # 到達不可能とする
+
 def calculate_defense_time(location, teams):
 
     time_per_team = {
@@ -59,6 +85,22 @@ def main():
         debuff_power = calculate_debuff(kill_count, original_power, disadvantage, kakin)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
+
+    st.header("必要KILL数計算")
+
+    debuff_power_input = st.number_input("デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="debuff_power_input")
+
+    if st.button("必要KILL数計算"):
+
+        kills_needed = calculate_kill_count(original_power, debuff_power_input, disadvantage, kakin)
+
+        if kills_needed >= 0:
+
+            st.write(f"目標デバフ戦力を達成するための必要KILL数: {kills_needed}回")
+
+        else:
+
+            st.write("目標デバフ戦力に到達できません。")
 
     st.header("防衛時間計算")
 
