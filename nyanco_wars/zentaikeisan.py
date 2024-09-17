@@ -92,6 +92,10 @@ def main():
 
     original_power_input = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power_input")
 
+    # 属性不利チェックボックス追加
+
+    disadvantage_input = st.checkbox("属性不利ですか？", key="disadvantage_input")
+
     if st.button("必要KILL数計算"):
 
         if original_power_input <= 0:
@@ -100,7 +104,7 @@ def main():
 
         else:
 
-            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage, kakin)
+            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, kakin)
 
             if kills_needed >= 0:
 
