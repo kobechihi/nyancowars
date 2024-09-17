@@ -90,17 +90,25 @@ def main():
 
     debuff_power_input = st.number_input("デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="debuff_power_input")
 
+    original_power_input = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power_input")
+
     if st.button("必要KILL数計算"):
 
-        kills_needed = calculate_kill_count(original_power, debuff_power_input, disadvantage, kakin)
+        if original_power_input <= 0:
 
-        if kills_needed >= 0:
-
-            st.write(f"目標デバフ戦力を達成するための必要KILL数: {kills_needed}回")
+            st.write("元の戦力は正の値である必要があります。")
 
         else:
 
-            st.write("目標デバフ戦力に到達できません。")
+            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage, kakin)
+
+            if kills_needed >= 0:
+
+                st.write(f"目標デバフ戦力を達成するための必要KILL数: {kills_needed}回")
+
+            else:
+
+                st.write("目標デバフ戦力に到達できません。")
 
     st.header("防衛時間計算")
 
