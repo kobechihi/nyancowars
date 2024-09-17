@@ -98,6 +98,62 @@ def calculate_kills_needed(my_team, opponent_team):
 
     return pd.DataFrame(kills_needed)
 
+def calculate_kills_for_power_difference(my_team_member, opponent_team):
+
+    attribute_advantage = {
+
+        "火": "木",  # 火は木に強い
+
+        "水": "火",  # 水は火に強い
+
+        "木": "水"   # 木は水に強い
+
+    }
+
+    kills_needed = []
+
+    for _, opp_row in opponent_team.iterrows():
+
+        opponent_power = opp_row['最高戦力']
+
+        opp_attribute = opp_row['属性']
+
+        my_power = my_team_member['最高戦力']
+
+        my_attribute = my_team_member['属性']
+
+        if my_attribute == attribute_advantage.get(opp_attribute):
+
+            effective_power = my_power * 1.5  # 有利属性
+
+        elif my_attribute == opp_attribute:
+
+            effective_power = my_power  # 同属性
+
+        else:
+
+            effective_power = my_power * 0.5  # 不利属性
+
+        target_power = opponent_power - 10000  # 戦力差を+10000にする
+
+        if target_power <= 0:
+
+            required_kills = 0
+
+        else:
+
+            required_kills = (effective_power - target_power) / (effective_power * 0.0024)
+
+        kills_needed.append({
+
+            '対戦相手': opp_row['名前'],
+
+            '必要KILL数': max(0, round(required_kills))
+
+        })
+
+    return pd.DataFrame(kills_needed)
+
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
@@ -212,11 +268,27 @@ def main():
 
     if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
 
-        kills_needed_df = calculate_kills_needed(st.session_state.my_team, st.session_state.opponent_team)
+        st.header("必要KILL数計算 (元の計算方法)")
 
-        st.subheader("必要KILL数")
+        if st.button("元の計算方法で計算"):
 
-        st.dataframe(kills_needed_df)
+            kills_needed_df = calculate_kills_needed(st.session_state.my_team, st.session_state.opponent_team)
+
+            st.dataframe(kills_needed_df)
+
+        st.header("戦力差+10000のための必要KILL数計算")
+
+        selected_member = st.selectbox("自チームメンバーを選択", st.session_state.my_team['名前'])
+
+        selected_member_data = st.session_state.my_team[st.session_state.my_team['名前'] == selected_member].iloc[0]
+
+        if st.button("戦力差計算"):
+
+            kills_needed_df = calculate_kills_for_power_difference(selected_member_data, st.session_state.opponent_team)
+
+            st.subheader(f"{selected_member}の必要KILL数")
+
+            st.dataframe(kills_needed_df)
 
 if __name__ == "__main__":
 
