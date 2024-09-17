@@ -22,11 +22,13 @@ def calculate_debuff(kill_count, original_power, disadvantage, kakin):
 
 def calculate_kills_needed(target_power, original_power, disadvantage, kakin):
 
+    if original_power <= 0:
+
+        return -1  # 元の戦力が0またはマイナスの場合は到達不可能
+
     original_level = 200  # 固定レベル
 
     kills = 0
-
-    # 元の戦力から目標戦力に到達するために必要なキル数を計算
 
     while True:
 
