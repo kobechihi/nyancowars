@@ -20,6 +20,34 @@ def calculate_debuff(kill_count, original_power, disadvantage, kakin):
 
     return level_decrease, debuff_power
 
+def calculate_kills_needed(target_debuff_power, original_power, disadvantage, kakin):
+
+    original_level = 200  # Fixed level
+
+    level_decrease = 0
+
+    kills = 0
+
+    while True:
+
+        current_debuff_power = original_power * (original_level - level_decrease) / original_level
+
+        if disadvantage:
+
+            current_debuff_power *= 1.25
+
+        if kakin:
+
+            current_debuff_power *= 1.15
+
+        if current_debuff_power <= target_debuff_power:
+
+            return kills
+
+        kills += 1
+
+        level_decrease = kills * original_level * 0.0024
+
 def calculate_defense_time(location, teams):
 
     time_per_team = {
@@ -59,6 +87,22 @@ def main():
         level_decrease, debuff_power = calculate_debuff(kill_count, original_power, disadvantage, kakin)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
+
+    st.header("必要キル数計算")
+
+    target_debuff_power = st.number_input("目標デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="target_debuff_power")
+
+    attribute = st.selectbox("属性を選択してください:", ["火", "水", "木"], key="target_attribute")
+
+    if st.button("必要キル数計算"):
+
+        # Adjust the disadvantage based on the selected attribute
+
+        disadvantage_effect = (attribute == "火" and disadvantage)  # Example condition
+
+        kills_needed = calculate_kills_needed(target_debuff_power, original_power, disadvantage_effect, kakin)
+
+        st.write(f"目標デバフ戦力に到達するための必要キル数: {kills_needed}回")
 
     st.header("防衛時間計算")
 
@@ -155,4 +199,3 @@ def main():
 if __name__ == "__main__":
 
     main()
- 
