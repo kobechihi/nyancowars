@@ -134,15 +134,17 @@ def calculate_kills_for_power_difference(my_team_member, opponent_team):
 
             effective_power = my_power * 0.5  # 不利属性
 
-        target_power = opponent_power - 10000  # 戦力差を+10000にする
+        target_power = opponent_power + 10000  # 戦力差を+10000にする
 
-        if target_power <= 0:
+        if effective_power >= target_power:
 
             required_kills = 0
 
         else:
 
-            required_kills = (effective_power - target_power) / (effective_power * 0.0024)
+            power_reduction_needed = target_power - effective_power
+
+            required_kills = power_reduction_needed / (effective_power * 0.0024)
 
         kills_needed.append({
 
