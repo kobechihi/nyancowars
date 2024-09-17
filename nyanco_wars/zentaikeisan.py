@@ -16,7 +16,7 @@ def calculate_debuff(kill_count, original_power, disadvantage, kakin):
 
     if kakin:
 
-        debuff_power *= 1.15  # 強化の補正
+        debuff_power *= 1.1  # 強化の補正
 
     return debuff_power
 
@@ -78,7 +78,7 @@ def main():
 
     disadvantage = st.checkbox("属性不利ですか？", key="disadvantage")
 
-    kakin = st.checkbox("課金していますか？", key="kakin")
+    kakin = st.checkbox("武器/複数体強いですか？", key="kakin")
 
     if st.button("戦力計算"):
 
