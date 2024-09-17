@@ -40,64 +40,6 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
-def calculate_kills_needed(my_team, opponent_team):
-
-    attribute_advantage = {
-
-        "火": "木",  # 火は木に強い
-
-        "水": "火",  # 水は火に強い
-
-        "木": "水"   # 木は水に強い
-
-    }
-
-    kills_needed = []
-
-    for _, opp_row in opponent_team.iterrows():
-
-        opponent_power = opp_row['最高戦力']
-
-        opp_attribute = opp_row['属性']
-
-        for _, my_row in my_team.iterrows():
-
-            my_power = my_row['最高戦力']
-
-            my_attribute = my_row['属性']
-
-            if my_attribute == attribute_advantage.get(opp_attribute):
-
-                effective_power = my_power * 1.5  # 有利属性
-
-            elif my_attribute == opp_attribute:
-
-                effective_power = my_power  # 同属性
-
-            else:
-
-                effective_power = my_power * 0.5  # 不利属性
-
-            if effective_power >= opponent_power:
-
-                required_kills = (200 / effective_power) / 0.0024  # 逆算
-
-            else:
-
-                required_kills = float('inf')  # 倒せない場合
-
-            kills_needed.append({
-
-                '対戦相手': opp_row['名前'],
-
-                '自チームメンバー': my_row['名前'],
-
-                '必要KILL数': required_kills
-
-            })
-
-    return pd.DataFrame(kills_needed)
-
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
@@ -209,16 +151,6 @@ def main():
     st.subheader("対戦相手チームメンバー")
 
     st.dataframe(st.session_state.opponent_team)
-
-    if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
-
-        st.header("必要KILL数計算")
-
-        if st.button("計算"):
-
-            kills_needed_df = calculate_kills_needed(st.session_state.my_team, st.session_state.opponent_team)
-
-            st.dataframe(kills_needed_df)
 
 if __name__ == "__main__":
 
