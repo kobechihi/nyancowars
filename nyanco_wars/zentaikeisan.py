@@ -108,15 +108,21 @@ def main():
 
     if st.button("必要キル数計算"):
 
-        kills_needed = calculate_kills_needed(target_power, original_power_input, disadvantage_for_kills, kakin)
+        if target_power <= 0:
 
-        if kills_needed >= 0:
-
-            st.write(f"目標戦力に到達するための必要キル数: {kills_needed}回")
+            st.write("目標戦力は正の値である必要があります。")
 
         else:
 
-            st.write("目標戦力に到達できません。")
+            kills_needed = calculate_kills_needed(target_power, original_power_input, disadvantage_for_kills, kakin)
+
+            if kills_needed >= 0:
+
+                st.write(f"目標戦力に到達するための必要キル数: {kills_needed}回")
+
+            else:
+
+                st.write("目標戦力に到達できません。")
 
     st.header("防衛時間計算")
 
