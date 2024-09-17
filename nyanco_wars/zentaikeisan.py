@@ -76,9 +76,9 @@ def main():
 
     original_power = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power")
 
-    disadvantage = st.checkbox("不利属性ですか？", key="disadvantage")
+    disadvantage = st.checkbox("属性不利ですか？", key="disadvantage")
 
-    kakin = st.checkbox("魔石・装備のレベルは高いですか？", key="kakin")
+    kakin = st.checkbox("課金していますか？", key="kakin")
 
     if st.button("戦力計算"):
 
