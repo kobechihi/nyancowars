@@ -12,13 +12,13 @@ def calculate_debuff(kill_count, original_power, disadvantage, kakin):
 
     if disadvantage:
 
-        debuff_power *= 1.25
+        debuff_power *= 1.25  # 不利属性の補正
 
     if kakin:
 
-        debuff_power *= 1.15
+        debuff_power *= 1.15  # 強化の補正
 
-    return level_decrease, debuff_power
+    return debuff_power
 
 def calculate_kills_needed(target_power, original_power, disadvantage, kakin):
 
@@ -26,23 +26,11 @@ def calculate_kills_needed(target_power, original_power, disadvantage, kakin):
 
         return -1  # 元の戦力が0またはマイナスの場合は到達不可能
 
-    original_level = 200  # 固定レベル
-
     kills = 0
 
     while True:
 
-        # 現在のデバフ戦力を計算
-
-        current_debuff_power = original_power * (original_level - kills * original_level * 0.0024) / original_level
-
-        if disadvantage:
-
-            current_debuff_power *= 1.25
-
-        if kakin:
-
-            current_debuff_power *= 1.15
+        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, kakin)
 
         # 目標戦力に到達しているか確認
 
@@ -94,7 +82,7 @@ def main():
 
     if st.button("戦力計算"):
 
-        level_decrease, debuff_power = calculate_debuff(kill_count, original_power, disadvantage, kakin)
+        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, kakin)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
