@@ -132,11 +132,13 @@ def main():
 
     if 'my_team' not in st.session_state:
 
-        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', 'メモ'])
+        st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
 
     if 'opponent_team' not in st.session_state:
 
         st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
+
+    attributes = ["火", "水", "木", "火複数", "水複数", "木複数"]
 
     st.header("自チームメンバー登録")
 
@@ -152,7 +154,7 @@ def main():
 
         with col2:
 
-            memo = st.text_area("メモ", key="my_memo")
+            attribute = st.selectbox("属性", attributes, key="my_attribute")
 
         submit_button = st.form_submit_button(label='自チームに登録')
 
@@ -164,7 +166,7 @@ def main():
 
             '最高戦力': [max_power],
 
-            'メモ': [memo],
+            '属性': [attribute],
 
         })
 
@@ -184,7 +186,7 @@ def main():
 
         with col2:
 
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
+            attribute = st.selectbox("属性", attributes, key="opp_attribute")
 
         submit_button = st.form_submit_button(label='対戦相手チームに登録')
 
