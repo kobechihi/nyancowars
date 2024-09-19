@@ -164,6 +164,8 @@ def main():
 
         st.write(f"防衛時間: {minutes}分 {seconds}秒")
 
+    # チームメンバーのセッション管理
+
     if 'my_team' not in st.session_state:
 
         st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
@@ -235,6 +237,8 @@ def main():
         })
 
         st.session_state.opponent_team = pd.concat([st.session_state.opponent_team, new_data], ignore_index=True)
+
+    # チームメンバーの表示
 
     st.subheader("自チームメンバー")
 
