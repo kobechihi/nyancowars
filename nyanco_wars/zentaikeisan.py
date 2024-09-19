@@ -70,41 +70,41 @@ def is_disadvantage(attacker_attr, defender_attr):
 
     advantages = {
 
-        "火": "木",
+        "火": ["木", "木複数"],
 
-        "水": "火",
+        "水": ["火", "火複数"],
 
-        "木": "水",
+        "木": ["水", "水複数"],
 
-        "火複数": "木",
+        "火複数": ["木", "木複数"],
 
-        "水複数": "火",
+        "水複数": ["火", "火複数"],
 
-        "木複数": "水"
+        "木複数": ["水", "水複数"]
 
     }
 
-    return advantages.get(attacker_attr) == defender_attr
+    return defender_attr in advantages.get(attacker_attr, [])
 
 def is_advantage(attacker_attr, defender_attr):
 
     advantages = {
 
-        "火": "木",
+        "火": ["木", "木複数"],
 
-        "水": "火",
+        "水": ["火", "火複数"],
 
-        "木": "水",
+        "木": ["水", "水複数"],
 
-        "火複数": "木",
+        "火複数": ["木", "木複数"],
 
-        "水複数": "火",
+        "水複数": ["火", "火複数"],
 
-        "木複数": "水"
+        "木複数": ["水", "水複数"]
 
     }
 
-    return advantages.get(defender_attr) == attacker_attr.replace("複数", "")
+    return attacker_attr in advantages.get(defender_attr, [])
 
 def is_special_character(attr):
 
@@ -131,6 +131,36 @@ def main():
         debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
+
+    st.header("必要デバフ数計算")
+
+    debuff_power_input = st.number_input("デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="debuff_power_input")
+
+    original_power_input = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power_input")
+
+    disadvantage_input = st.checkbox("属性不利ですか？", key="disadvantage_input")
+
+    advantage_input = st.checkbox("属性有利ですか？", key="advantage_input")
+
+    special_character_input = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character_input")
+
+    if st.button("必要デバフ数計算"):
+
+        if original_power_input <= 0:
+
+            st.write("元の戦力は正の値である必要があります。")
+
+        else:
+
+            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, advantage_input, special_character_input)
+
+            if kills_needed >= 0:
+
+                st.write(f"目標デバフ戦力を達成するための必要KILL数: {kills_needed}回")
+
+            else:
+
+                st.write("目標デバフ戦力に到達できません。")
 
     st.header("防衛時間計算")
 
