@@ -86,7 +86,7 @@ def main():
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
-    st.header("必要KILL数計算")
+    st.header("必要デバフ数計算")
 
     debuff_power_input = st.number_input("デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="debuff_power_input")
 
@@ -96,7 +96,7 @@ def main():
 
     disadvantage_input = st.checkbox("属性不利ですか？", key="disadvantage_input")
 
-    if st.button("必要KILL数計算"):
+    if st.button("必要デバフ数計算"):
 
         if original_power_input <= 0:
 
