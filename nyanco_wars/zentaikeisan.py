@@ -2,7 +2,7 @@ import streamlit as st
 
 import pandas as pd
 
-def calculate_debuff(kill_count, original_power, disadvantage, advantage):
+def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character):
 
     original_level = 200  # 固定レベル
 
@@ -18,9 +18,13 @@ def calculate_debuff(kill_count, original_power, disadvantage, advantage):
 
         debuff_power *= 0.75  # 有利属性の補正
 
+    if special_character:
+
+        debuff_power *= 1.13  # 複数体強化キャラor特定のキャラの補正
+
     return debuff_power
 
-def calculate_kill_count(original_power, debuff_power, disadvantage, advantage):
+def calculate_kill_count(original_power, debuff_power, disadvantage, advantage, special_character):
 
     if original_power <= 0:
 
@@ -30,7 +34,7 @@ def calculate_kill_count(original_power, debuff_power, disadvantage, advantage):
 
     while True:
 
-        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, advantage)
+        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, advantage, special_character)
 
         if current_debuff_power <= debuff_power:
 
@@ -76,9 +80,11 @@ def main():
 
     advantage = st.checkbox("属性有利ですか？", key="advantage")
 
+    special_character = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character")
+
     if st.button("戦力計算"):
 
-        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage)
+        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
@@ -92,6 +98,8 @@ def main():
 
     advantage_input = st.checkbox("属性有利ですか？", key="advantage_input")
 
+    special_character_input = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character_input")
+
     if st.button("必要デバフ数計算"):
 
         if original_power_input <= 0:
@@ -100,7 +108,7 @@ def main():
 
         else:
 
-            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, advantage_input)
+            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, advantage_input, special_character_input)
 
             if kills_needed >= 0:
 
