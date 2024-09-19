@@ -66,6 +66,46 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
+def is_disadvantage(attacker_attr, defender_attr):
+
+    advantages = {
+
+        "火": "木",
+
+        "水": "火",
+
+        "木": "水"
+
+    }
+
+    attacker_main = attacker_attr.split("&")[0]
+
+    defender_main = defender_attr.split("&")[0]
+
+    return advantages.get(attacker_main) == defender_main
+
+def is_advantage(attacker_attr, defender_attr):
+
+    advantages = {
+
+        "火": "木",
+
+        "水": "火",
+
+        "木": "水"
+
+    }
+
+    attacker_main = attacker_attr.split("&")[0]
+
+    defender_main = defender_attr.split("&")[0]
+
+    return advantages.get(defender_main) == attacker_main
+
+def is_special_character(attr):
+
+    return "&" in attr
+
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
@@ -88,36 +128,6 @@ def main():
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
-    st.header("必要デバフ数計算")
-
-    debuff_power_input = st.number_input("デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="debuff_power_input")
-
-    original_power_input = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power_input")
-
-    disadvantage_input = st.checkbox("属性不利ですか？", key="disadvantage_input")
-
-    advantage_input = st.checkbox("属性有利ですか？", key="advantage_input")
-
-    special_character_input = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character_input")
-
-    if st.button("必要デバフ数計算"):
-
-        if original_power_input <= 0:
-
-            st.write("元の戦力は正の値である必要があります。")
-
-        else:
-
-            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, advantage_input, special_character_input)
-
-            if kills_needed >= 0:
-
-                st.write(f"目標デバフ戦力を達成するための必要KILL数: {kills_needed}回")
-
-            else:
-
-                st.write("目標デバフ戦力に到達できません。")
-
     st.header("防衛時間計算")
 
     location = st.selectbox("場所を選択してください:", ["にゃんタウン", "寮", "城"])
@@ -138,7 +148,7 @@ def main():
 
         st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
 
-    attributes = ["火", "水", "木", "火&水", "火&木", "水&火", "水&木", "木&火", "木&水"]
+    attributes = ["火", "水", "木", "火&水", "火&木", "水&木"]
 
     st.header("自チームメンバー登録")
 
@@ -211,6 +221,38 @@ def main():
     st.subheader("対戦相手チームメンバー")
 
     st.dataframe(st.session_state.opponent_team)
+
+    if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
+
+        st.header("必要デバフ数計算結果")
+
+        results = []
+
+        for _, opponent in st.session_state.opponent_team.iterrows():
+
+            for _, ally in st.session_state.my_team.iterrows():
+
+                disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
+
+                advantage = is_advantage(opponent['属性'], ally['属性'])
+
+                special_character = is_special_character(opponent['属性'])
+
+                kills_needed = calculate_kill_count(opponent['最高戦力'], ally['最高戦力'], disadvantage, advantage, special_character)
+
+                results.append({
+
+                    '対戦相手': opponent['名前'],
+
+                    '自チーム': ally['名前'],
+
+                    '必要デバフ数': kills_needed
+
+                })
+
+        results_df = pd.DataFrame(results)
+
+        st.dataframe(results_df)
 
 if __name__ == "__main__":
 
