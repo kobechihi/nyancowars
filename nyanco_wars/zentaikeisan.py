@@ -66,6 +66,22 @@ def calculate_defense_time(location, teams):
 
     return minutes, seconds
 
+def determine_advantage_disadvantage(attribute, disadvantage, advantage):
+
+    if "火" in attribute and "水" in attribute:
+
+        return disadvantage, advantage  # 水が有利
+
+    if "水" in attribute and "木" in attribute:
+
+        return disadvantage, advantage  # 木が有利
+
+    if "木" in attribute and "火" in attribute:
+
+        return disadvantage, advantage  # 火が有利
+
+    return disadvantage, advantage  # それ以外はそのまま
+
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
@@ -76,11 +92,21 @@ def main():
 
     original_power = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power")
 
+    # 属性の選択肢
+
+    attributes = ["火", "水", "木", "火＆水", "火＆木", "水＆火", "水＆木", "木＆火", "木＆水"]
+
+    attribute = st.selectbox("属性を選択してください:", attributes, key="attribute")
+
     disadvantage = st.checkbox("属性不利ですか？", key="disadvantage")
 
     advantage = st.checkbox("属性有利ですか？", key="advantage")
 
     special_character = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character")
+
+    # 属性判定
+
+    disadvantage, advantage = determine_advantage_disadvantage(attribute, disadvantage, advantage)
 
     if st.button("戦力計算"):
 
@@ -94,11 +120,19 @@ def main():
 
     original_power_input = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power_input")
 
+    # 属性の選択肢
+
+    attribute_input = st.selectbox("属性を選択してください:", attributes, key="attribute_input")
+
     disadvantage_input = st.checkbox("属性不利ですか？", key="disadvantage_input")
 
     advantage_input = st.checkbox("属性有利ですか？", key="advantage_input")
 
     special_character_input = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character_input")
+
+    # 属性判定
+
+    disadvantage_input, advantage_input = determine_advantage_disadvantage(attribute_input, disadvantage_input, advantage_input)
 
     if st.button("必要デバフ数計算"):
 
@@ -137,8 +171,6 @@ def main():
     if 'opponent_team' not in st.session_state:
 
         st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
-
-    attributes = ["火", "水", "木", "火＆水", "火＆木", "水＆火", "水＆木", "木＆火", "木＆水"]
 
     st.header("自チームメンバー登録")
 
