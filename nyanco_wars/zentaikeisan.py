@@ -88,6 +88,18 @@ def main():
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
+    st.header("防衛時間計算")
+
+    location = st.selectbox("場所を選択してください:", ["にゃんタウン", "寮", "城"])
+
+    teams = st.number_input("班数を入力してください:", min_value=1, step=1, key="defense_teams")
+
+    if st.button("防衛時間計算"):
+
+        minutes, seconds = calculate_defense_time(location, teams)
+
+        st.write(f"防衛時間: {minutes}分 {seconds}秒")
+
     st.header("必要デバフ数計算")
 
     debuff_power_input = st.number_input("デバフ戦力を入力してください[万]:", min_value=0.0, step=0.1, key="debuff_power_input")
@@ -118,25 +130,13 @@ def main():
 
                 st.write("目標デバフ戦力に到達できません。")
 
-    st.header("防衛時間計算")
-
-    location = st.selectbox("場所を選択してください:", ["にゃんタウン", "寮", "城"])
-
-    teams = st.number_input("班数を入力してください:", min_value=1, step=1, key="defense_teams")
-
-    if st.button("防衛時間計算"):
-
-        minutes, seconds = calculate_defense_time(location, teams)
-
-        st.write(f"防衛時間: {minutes}分 {seconds}秒")
-
     if 'my_team' not in st.session_state:
 
         st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
 
     if 'opponent_team' not in st.session_state:
 
-        st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
+        st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', 'メモ'])
 
     st.header("自チームメンバー登録")
 
@@ -184,7 +184,7 @@ def main():
 
         with col2:
 
-            attribute = st.selectbox("属性", ["火", "水", "木"], key="opp_attribute")
+            memo = st.text_area("メモ", key="opp_memo")
 
         submit_button = st.form_submit_button(label='対戦相手チームに登録')
 
@@ -196,7 +196,7 @@ def main():
 
             '最高戦力': [max_power],
 
-            '属性': [attribute],
+            'メモ': [memo],
 
         })
 
