@@ -138,7 +138,7 @@ def main():
 
         st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
 
-    attributes = ["火", "水", "木", "火複数", "水複数", "木複数"]
+    attributes = ["火", "水", "木", "火＆水", "火&木", "水&火", "水&木", "木&火", "木&水"]
 
     st.header("自チームメンバー登録")
 
