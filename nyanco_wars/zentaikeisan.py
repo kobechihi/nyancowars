@@ -170,24 +170,6 @@ def main():
 
         st.session_state.my_team = pd.concat([st.session_state.my_team, new_data], ignore_index=True)
 
-    st.subheader("自チームメンバー")
-
-    st.dataframe(st.session_state.my_team)
-
-    # 自チームメンバー削除機能
-
-    if not st.session_state.my_team.empty:
-
-        delete_my_team = st.selectbox("削除する自チームメンバーを選択:", st.session_state.my_team['名前'].tolist())
-
-        if st.button("自チームメンバーを削除"):
-
-            st.session_state.my_team = st.session_state.my_team[st.session_state.my_team['名前'] != delete_my_team]
-
-            st.success(f"{delete_my_team} を自チームから削除しました。")
-
-            st.experimental_rerun()
-
     st.header("対戦相手チームメンバー登録")
 
     with st.form(key='opponent_team_form'):
@@ -220,23 +202,13 @@ def main():
 
         st.session_state.opponent_team = pd.concat([st.session_state.opponent_team, new_data], ignore_index=True)
 
+    st.subheader("自チームメンバー")
+
+    st.dataframe(st.session_state.my_team)
+
     st.subheader("対戦相手チームメンバー")
 
     st.dataframe(st.session_state.opponent_team)
-
-    # 対戦相手チームメンバー削除機能
-
-    if not st.session_state.opponent_team.empty:
-
-        delete_opponent_team = st.selectbox("削除する対戦相手チームメンバーを選択:", st.session_state.opponent_team['名前'].tolist())
-
-        if st.button("対戦相手チームメンバーを削除"):
-
-            st.session_state.opponent_team = st.session_state.opponent_team[st.session_state.opponent_team['名前'] != delete_opponent_team]
-
-            st.success(f"{delete_opponent_team} を対戦相手チームから削除しました。")
-
-            st.experimental_rerun()
 
 if __name__ == "__main__":
 
