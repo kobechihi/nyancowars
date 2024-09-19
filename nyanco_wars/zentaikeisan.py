@@ -2,7 +2,7 @@ import streamlit as st
 
 import pandas as pd
 
-def calculate_debuff(kill_count, original_power, disadvantage, kakin):
+def calculate_debuff(kill_count, original_power, disadvantage, advantage):
 
     original_level = 200  # 固定レベル
 
@@ -20,7 +20,7 @@ def calculate_debuff(kill_count, original_power, disadvantage, kakin):
 
     return debuff_power
 
-def calculate_kill_count(original_power, debuff_power, disadvantage, kakin):
+def calculate_kill_count(original_power, debuff_power, disadvantage, advantage):
 
     if original_power <= 0:
 
@@ -30,9 +30,7 @@ def calculate_kill_count(original_power, debuff_power, disadvantage, kakin):
 
     while True:
 
-        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, kakin)
-
-        # 目標デバフ戦力に到達しているか確認
+        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, advantage)
 
         if current_debuff_power <= debuff_power:
 
@@ -40,9 +38,7 @@ def calculate_kill_count(original_power, debuff_power, disadvantage, kakin):
 
         kills += 1
 
-        # 無限ループ防止のため、ある程度のキル数に達したら終了
-
-        if kills > 1000:  # 例: 1000回で終了
+        if kills > 1000:  # 無限ループ防止
 
             return -1  # 到達不可能とする
 
@@ -78,11 +74,11 @@ def main():
 
     disadvantage = st.checkbox("属性不利ですか？", key="disadvantage")
 
-    kakin = st.checkbox("属性有利ですか？", key="advantage")
+    advantage = st.checkbox("属性有利ですか？", key="advantage")
 
     if st.button("戦力計算"):
 
-        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, kakin)
+        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
@@ -92,9 +88,9 @@ def main():
 
     original_power_input = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power_input")
 
-    # 属性不利チェックボックス追加
-
     disadvantage_input = st.checkbox("属性不利ですか？", key="disadvantage_input")
+
+    advantage_input = st.checkbox("属性有利ですか？", key="advantage_input")
 
     if st.button("必要デバフ数計算"):
 
@@ -104,7 +100,7 @@ def main():
 
         else:
 
-            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, kakin)
+            kills_needed = calculate_kill_count(original_power_input, debuff_power_input, disadvantage_input, advantage_input)
 
             if kills_needed >= 0:
 
