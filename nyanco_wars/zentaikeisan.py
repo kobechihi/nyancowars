@@ -242,37 +242,37 @@ def main():
 
         for _, opponent in st.session_state.opponent_team.iterrows():
 
-            selected_member = st.selectbox(f"{opponent['名前']}に対するギルメン選択", st.session_state.my_team['名前'].tolist(), key=opponent['名前'])
+            # Calculate debuff count for each opponent using the first guild member
 
-            # Get the selected ally's attributes and power
+            if not st.session_state.my_team.empty:
 
-            ally = st.session_state.my_team[st.session_state.my_team['名前'] == selected_member].iloc[0]
+                ally = st.session_state.my_team.iloc[0]
 
-            disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
+                disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
 
-            advantage = is_advantage(opponent['属性'], ally['属性'])
+                advantage = is_advantage(opponent['属性'], ally['属性'])
 
-            special_character = is_special_character(opponent['属性'])
+                special_character = is_special_character(opponent['属性'])
 
-            kills_needed = calculate_kill_count(opponent['最高戦力'], ally['最高戦力'], disadvantage, advantage, special_character)
+                kills_needed = calculate_kill_count(opponent['最高戦力'], ally['最高戦力'], disadvantage, advantage, special_character)
 
-            # 名前に#がついている場合、必要デバフ数に30を足す
+                # 名前に#がついている場合、必要デバフ数に30を足す
 
-            if '#' in opponent['名前']:
+                if '#' in opponent['名前']:
 
-                kills_needed += 30
+                    kills_needed += 30
 
-            results.append({
+                results.append({
 
-                '対戦相手': opponent['名前'],
+                    '対戦相手': opponent['名前'],
 
-                '対戦相手戦力': opponent['最高戦力'],
+                    '対戦相手戦力': opponent['最高戦力'],
 
-                'ギルメン': selected_member,
+                    'ギルメン': ally['名前'],
 
-                'デバフ数': kills_needed
+                    'デバフ数': kills_needed
 
-            })
+                })
 
         results_df = pd.DataFrame(results)
 
