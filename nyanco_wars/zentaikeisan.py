@@ -4,6 +4,8 @@ import pandas as pd
 
 import itertools
 
+from collections import Counter
+
 def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character, high_power):
 
     original_level = 200  # 固定レベル
@@ -274,47 +276,49 @@ def main():
 
         st.header("戦略提案")
 
-        # ギルドメンバーの出撃回数を制限する
-
         opponent_names = st.session_state.opponent_team['名前'].tolist()
 
         ally_names = st.session_state.my_team['名前'].tolist()
 
-        # ギルドメンバーの出撃回数制限
+        # 出撃回数制限のためのカウンター
 
         max_deploy_count = 2
 
-        ally_count = len(opponent_names) * 2  # 各対戦相手に対して2回出撃
-
-        possible_allies = [ally for ally in ally_names for _ in range(max_deploy_count)]
-
-        best_strategy = None
+        best_strategy = []
 
         min_total_debuff = float('inf')
 
-        # 可能な組み合わせを生成する際に、出撃回数を考慮する
+        # 各対戦相手ごとに最適なギルメンを選ぶ
 
-        for ally_combo in itertools.combinations_with_replacement(possible_allies, ally_count):
+        for opponent in opponent_names:
 
-            if all(ally_combo.count(ally) <= max_deploy_count for ally in set(ally_combo)):
+            best_ally = None
 
-                current_strategy = list(zip(opponent_names * 2, ally_combo))
+            best_debuff = float('inf')
 
-                total_debuff = sum(
+            for ally in ally_names:
 
-                    results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
+                # 現在のデバフ数を取得
 
-                    for opp, ally in current_strategy
+                current_debuff = results_df[(results_df['対戦相手'] == opponent) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
 
-                    if not results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)].empty
+                # 出撃回数をカウント
 
-                )
+                ally_counter = Counter([a for _, a in best_strategy])
 
-                if total_debuff < min_total_debuff:
+                if ally_counter[ally] < max_deploy_count:
 
-                    min_total_debuff = total_debuff
+                    if current_debuff < best_debuff:
 
-                    best_strategy = current_strategy
+                        best_debuff = current_debuff
+
+                        best_ally = ally
+
+            if best_ally:
+
+                best_strategy.append((opponent, best_ally))
+
+                min_total_debuff += best_debuff
 
         if best_strategy:
 
