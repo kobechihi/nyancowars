@@ -274,33 +274,47 @@ def main():
 
         st.header("戦略提案")
 
-        # 全ての可能な組み合わせを生成
+        # ギルドメンバーの出撃回数を制限する
 
         opponent_names = st.session_state.opponent_team['名前'].tolist()
 
         ally_names = st.session_state.my_team['名前'].tolist()
 
+        # ギルドメンバーの出撃回数制限
+
+        max_deploy_count = 2
+
+        ally_count = len(opponent_names) * 2  # 各対戦相手に対して2回出撃
+
+        possible_allies = [ally for ally in ally_names for _ in range(max_deploy_count)]
+
         best_strategy = None
 
         min_total_debuff = float('inf')
 
-        for ally_combo in itertools.product(ally_names, repeat=len(opponent_names)*2):
+        # 可能な組み合わせを生成する際に、出撃回数を考慮する
 
-            current_strategy = list(zip(opponent_names * 2, ally_combo))
+        for ally_combo in itertools.combinations_with_replacement(possible_allies, ally_count):
 
-            total_debuff = sum(
+            if all(ally_combo.count(ally) <= max_deploy_count for ally in set(ally_combo)):
 
-                results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
+                current_strategy = list(zip(opponent_names * 2, ally_combo))
 
-                for opp, ally in current_strategy
+                total_debuff = sum(
 
-            )
+                    results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
 
-            if total_debuff < min_total_debuff:
+                    for opp, ally in current_strategy
 
-                min_total_debuff = total_debuff
+                    if not results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)].empty
 
-                best_strategy = current_strategy
+                )
+
+                if total_debuff < min_total_debuff:
+
+                    min_total_debuff = total_debuff
+
+                    best_strategy = current_strategy
 
         if best_strategy:
 
