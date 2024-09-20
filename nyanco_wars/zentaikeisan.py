@@ -232,7 +232,7 @@ def main():
 
     st.dataframe(st.session_state.opponent_team)
 
-        if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
+    if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
 
         st.header("デバフ数計算結果")
 
@@ -313,76 +313,6 @@ def main():
                 st.write(f"{opp}は{ally}（デバフ数 {debuff}）")
 
             st.write(f"合計デバフ数は{min_total_debuff}")
-
-        else:
-
-            st.write("戦略を計算できませんでした。データを確認してください。")
-
-if __name__ == "__main__":
-
-    main()
- 
-                results.append({
-
-                    '対戦相手': opponent['名前'],
-
-                    '対戦相手戦力': opponent['最高戦力'],
-
-                    'ギルメン': ally['名前'],
-
-                    'デバフ数': kills_needed
-
-                })
-
-        results_df = pd.DataFrame(results)
-
-        st.dataframe(results_df)
-
-        # 戦略提案機能
-
-        st.header("戦略提案")
-
-        # 全ての可能な組み合わせを生成
-
-        opponent_combinations = list(itertools.combinations_with_replacement(st.session_state.opponent_team['名前'], 3))
-
-        ally_combinations = list(itertools.combinations_with_replacement(st.session_state.my_team['名前'], 3))
-
-        best_strategy = None
-
-        min_total_debuff = float('inf')
-
-        for opp_combo in opponent_combinations:
-
-            for ally_combo in ally_combinations:
-
-                current_strategy = list(zip(opp_combo, ally_combo))
-
-                total_debuff = sum(
-
-                    results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
-
-                    for opp, ally in current_strategy
-
-                )
-
-                if total_debuff < min_total_debuff:
-
-                    min_total_debuff = total_debuff
-
-                    best_strategy = current_strategy
-
-        if best_strategy:
-
-            st.subheader("最適な戦略:")
-
-            for opp, ally in best_strategy:
-
-                debuff = results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
-
-                st.write(f"{opp} vs {ally} (デバフ数: {debuff})")
-
-            st.write(f"合計デバフ数: {min_total_debuff}")
 
         else:
 
