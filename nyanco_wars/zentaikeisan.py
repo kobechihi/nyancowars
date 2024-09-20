@@ -2,6 +2,8 @@ import streamlit as st
 
 import pandas as pd
 
+import itertools
+
 def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character, high_power):
 
     original_level = 200  # 固定レベル
@@ -272,43 +274,51 @@ def main():
 
         st.header("戦略提案")
 
-        # 対戦相手とギルメンの選択
+        # 全ての可能な組み合わせを生成
 
-        selected_opponents = st.multiselect("対戦相手を2人選択してください:", options=st.session_state.opponent_team['名前'].unique(), max_selections=2)
+        opponent_combinations = list(itertools.combinations_with_replacement(st.session_state.opponent_team['名前'], 3))
 
-        selected_allies = st.multiselect("ギルメンを2人選択してください:", options=st.session_state.my_team['名前'].unique(), max_selections=2)
+        ally_combinations = list(itertools.combinations_with_replacement(st.session_state.my_team['名前'], 3))
 
-        if len(selected_opponents) == 2 and len(selected_allies) == 2:
+        best_strategy = None
 
-            # 選択された対戦相手とギルメンのみのデータを抽出
+        min_total_debuff = float('inf')
 
-            selected_results = results_df[
+        for opp_combo in opponent_combinations:
 
-                (results_df['対戦相手'].isin(selected_opponents)) & 
+            for ally_combo in ally_combinations:
 
-                (results_df['ギルメン'].isin(selected_allies))
+                current_strategy = list(zip(opp_combo, ally_combo))
 
-            ]
+                total_debuff = sum(
 
-            # 最適な組み合わせを見つける
+                    results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
 
-            best_combination = selected_results.groupby(['対戦相手', 'ギルメン'])['デバフ数'].sum().reset_index()
+                    for opp, ally in current_strategy
 
-            best_combination = best_combination.sort_values('デバフ数').iloc[:2]
+                )
 
-            total_debuff = best_combination['デバフ数'].sum()
+                if total_debuff < min_total_debuff:
+
+                    min_total_debuff = total_debuff
+
+                    best_strategy = current_strategy
+
+        if best_strategy:
 
             st.subheader("最適な戦略:")
 
-            for _, row in best_combination.iterrows():
+            for opp, ally in best_strategy:
 
-                st.write(f"{row['対戦相手']} vs {row['ギルメン']} (デバフ数: {row['デバフ数']})")
+                debuff = results_df[(results_df['対戦相手'] == opp) & (results_df['ギルメン'] == ally)]['デバフ数'].iloc[0]
 
-            st.write(f"合計デバフ数: {total_debuff}")
+                st.write(f"{opp} vs {ally} (デバフ数: {debuff})")
+
+            st.write(f"合計デバフ数: {min_total_debuff}")
 
         else:
 
-            st.write("対戦相手とギルメンをそれぞれ2人ずつ選択してください。")
+            st.write("戦略を計算できませんでした。データを確認してください。")
 
 if __name__ == "__main__":
 
