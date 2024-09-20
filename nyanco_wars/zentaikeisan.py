@@ -2,7 +2,7 @@ import streamlit as st
 
 import pandas as pd
 
-def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character):
+def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character, high_power):
 
     original_level = 200  # 固定レベル
 
@@ -22,6 +22,10 @@ def calculate_debuff(kill_count, original_power, disadvantage, advantage, specia
 
         debuff_power *= 1.13  # 複数体強化キャラor特定のキャラの補正
 
+    if high_power:
+
+        debuff_power = calculate_debuff(kill_count + 30, original_power, disadvantage, advantage, special_character, False)
+
     return debuff_power
 
 def calculate_kill_count(original_power, debuff_power, disadvantage, advantage, special_character):
@@ -34,7 +38,7 @@ def calculate_kill_count(original_power, debuff_power, disadvantage, advantage, 
 
     while True:
 
-        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, advantage, special_character)
+        current_debuff_power = calculate_debuff(kills, original_power, disadvantage, advantage, special_character, False)
 
         if current_debuff_power <= debuff_power:
 
@@ -122,9 +126,11 @@ def main():
 
     special_character = st.checkbox("複数体(500万以上 SSR武器 特定のキャラですか？", key="special_character")
 
+    high_power = st.checkbox("戦力3000万以上ですか？", key="high_power")
+
     if st.button("戦力計算"):
 
-        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character)
+        debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character, high_power)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
 
@@ -182,7 +188,9 @@ def main():
 
         st.session_state.my_team = pd.concat([st.session_state.my_team, new_data], ignore_index=True)
 
-    st.header("対戦相手ギルドメンバー登録（3000万以上の相手には#をつけてください)")
+    st.header("対戦相手ギルドメンバー登録")
+
+    st.markdown("<small>3000万以上の相手には名前の後ろに#をつけてください</small>", unsafe_allow_html=True)
 
     with st.form(key='opponent_team_form'):
 
