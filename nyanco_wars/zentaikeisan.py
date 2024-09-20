@@ -248,8 +248,6 @@ def main():
 
                 kills_needed = calculate_kill_count(opponent['最高戦力'], ally['最高戦力'], disadvantage, advantage, special_character)
 
-                # 名前に#がついている場合、必要デバフ数に30を足す
-
                 if '#' in opponent['名前']:
 
                     kills_needed += 30
@@ -269,6 +267,48 @@ def main():
         results_df = pd.DataFrame(results)
 
         st.dataframe(results_df)
+
+        # 戦略提案機能
+
+        st.header("戦略提案")
+
+        # 対戦相手とギルメンの選択
+
+        selected_opponents = st.multiselect("対戦相手を2人選択してください:", options=st.session_state.opponent_team['名前'].unique(), max_selections=2)
+
+        selected_allies = st.multiselect("ギルメンを2人選択してください:", options=st.session_state.my_team['名前'].unique(), max_selections=2)
+
+        if len(selected_opponents) == 2 and len(selected_allies) == 2:
+
+            # 選択された対戦相手とギルメンのみのデータを抽出
+
+            selected_results = results_df[
+
+                (results_df['対戦相手'].isin(selected_opponents)) & 
+
+                (results_df['ギルメン'].isin(selected_allies))
+
+            ]
+
+            # 最適な組み合わせを見つける
+
+            best_combination = selected_results.groupby(['対戦相手', 'ギルメン'])['デバフ数'].sum().reset_index()
+
+            best_combination = best_combination.sort_values('デバフ数').iloc[:2]
+
+            total_debuff = best_combination['デバフ数'].sum()
+
+            st.subheader("最適な戦略:")
+
+            for _, row in best_combination.iterrows():
+
+                st.write(f"{row['対戦相手']} vs {row['ギルメン']} (デバフ数: {row['デバフ数']})")
+
+            st.write(f"合計デバフ数: {total_debuff}")
+
+        else:
+
+            st.write("対戦相手とギルメンをそれぞれ2人ずつ選択してください。")
 
 if __name__ == "__main__":
 
