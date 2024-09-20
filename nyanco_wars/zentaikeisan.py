@@ -24,7 +24,7 @@ def calculate_debuff(kill_count, original_power, disadvantage, advantage, specia
 
     if high_power:
 
-        debuff_power = calculate_debuff(kill_count + 30, original_power, disadvantage, advantage, special_character, False)
+        debuff_power = calculate_debuff(kill_count - 30, original_power, disadvantage, advantage, special_character, False)
 
     return debuff_power
 
