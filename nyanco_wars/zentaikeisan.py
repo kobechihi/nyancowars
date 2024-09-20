@@ -2,8 +2,6 @@ import streamlit as st
 
 import pandas as pd
 
-import itertools
-
 def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character, high_power):
 
     original_level = 200  # 固定レベル
@@ -122,23 +120,21 @@ def find_best_strategy(results_df):
 
     members = results_df['ギルメン'].unique()
 
-    # ギルメンの組み合わせを生成
+    # ギルメンの組み合わせを手動で生成
 
-    for combination in itertools.product(members, repeat=2):
+    for i in range(len(members)):
 
-        total_debuffs = results_df.loc[
+        for j in range(len(members)):
 
-            (results_df['ギルメン'].isin(combination)) & 
+            if i != j:  # 同じメンバーは選ばない
 
-            (results_df['対戦相手'].isin(results_df['対戦相手']))
+                combined_debuffs = results_df.loc[(results_df['ギルメン'] == members[i]) | (results_df['ギルメン'] == members[j]), 'デバフ数'].sum()
 
-        ]['デバフ数'].sum()
+                if combined_debuffs < min_total_debuffs:
 
-        if total_debuffs < min_total_debuffs:
+                    min_total_debuffs = combined_debuffs
 
-            min_total_debuffs = total_debuffs
-
-            best_combination = combination
+                    best_combination = (members[i], members[j])
 
     return best_combination, min_total_debuffs
 
