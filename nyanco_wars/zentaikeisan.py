@@ -110,34 +110,6 @@ def is_special_character(attr):
 
     return "&" in attr
 
-def find_best_strategy(results_df):
-
-    best_combination = None
-
-    min_total_debuffs = float('inf')
-
-    # ギルドメンバーの名前をリスト化
-
-    members = results_df['ギルメン'].unique()
-
-    # ギルメンの組み合わせを手動で生成
-
-    for i in range(len(members)):
-
-        for j in range(len(members)):
-
-            if i != j:  # 同じメンバーは選ばない
-
-                combined_debuffs = results_df.loc[(results_df['ギルメン'] == members[i]) | (results_df['ギルメン'] == members[j]), 'デバフ数'].sum()
-
-                if combined_debuffs < min_total_debuffs:
-
-                    min_total_debuffs = combined_debuffs
-
-                    best_combination = (members[i], members[j])
-
-    return best_combination, min_total_debuffs
-
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
@@ -276,6 +248,8 @@ def main():
 
                 kills_needed = calculate_kill_count(opponent['最高戦力'], ally['最高戦力'], disadvantage, advantage, special_character)
 
+                # 名前に#がついている場合、必要デバフ数に30を足す
+
                 if '#' in opponent['名前']:
 
                     kills_needed += 30
@@ -295,18 +269,6 @@ def main():
         results_df = pd.DataFrame(results)
 
         st.dataframe(results_df)
-
-        # 戦略提案の表示
-
-        if not results_df.empty:
-
-            best_combination, min_total_debuffs = find_best_strategy(results_df)
-
-            st.header("戦略提案")
-
-            st.write(f"最適なギルメンの組み合わせ: {best_combination[0]} と {best_combination[1]}")
-
-            st.write(f"合計デバフ数: {min_total_debuffs}")
 
 if __name__ == "__main__":
 
