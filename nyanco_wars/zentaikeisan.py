@@ -24,7 +24,7 @@ def calculate_debuff(kill_count, original_power, disadvantage, advantage, specia
 
     if high_power:
 
-        debuff_power = calculate_debuff(kill_count - 30, original_power, disadvantage, advantage, special_character, False)
+        debuff_power = calculate_debuff(kill_count + 30, original_power, disadvantage, advantage, special_character, False)
 
     return debuff_power
 
@@ -114,8 +114,6 @@ def main():
 
     st.title("にゃんこウォーズ計算ツール")
 
-    # 戦力計算
-
     st.header("戦力計算[班]")
 
     kill_count = st.number_input("デバフ数を入力してください:", min_value=0, step=1, key="kill_count")
@@ -126,7 +124,7 @@ def main():
 
     advantage = st.checkbox("属性有利ですか？", key="advantage")
 
-    special_character = st.checkbox("複数体(500万以上) SSR武器 特定のキャラですか？", key="special_character")
+    special_character = st.checkbox("複数体(500万以上 SSR武器 特定のキャラですか？", key="special_character")
 
     high_power = st.checkbox("戦力3000万以上ですか？", key="high_power")
 
@@ -135,8 +133,6 @@ def main():
         debuff_power = calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character, high_power)
 
         st.write(f"デバフ戦力: {debuff_power:.2f}")
-
-    # 防衛時間計算
 
     st.header("防衛時間計算")
 
@@ -150,11 +146,13 @@ def main():
 
         st.write(f"防衛時間: {minutes}分 {seconds}秒")
 
-    # ギルドメンバー登録
-
     if 'my_team' not in st.session_state:
 
         st.session_state.my_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
+
+    if 'opponent_team' not in st.session_state:
+
+        st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
 
     attributes = ["火", "水", "木", "火&他", "水&他", "木&他"]
 
@@ -190,11 +188,9 @@ def main():
 
         st.session_state.my_team = pd.concat([st.session_state.my_team, new_data], ignore_index=True)
 
-    if 'opponent_team' not in st.session_state:
-
-        st.session_state.opponent_team = pd.DataFrame(columns=['名前', '最高戦力', '属性'])
-
     st.header("対戦相手ギルドメンバー登録")
+
+    st.markdown("3000万以上の相手には#をつけてください", unsafe_allow_html=True)
 
     with st.form(key='opponent_team_form'):
 
@@ -242,11 +238,7 @@ def main():
 
         for _, opponent in st.session_state.opponent_team.iterrows():
 
-            # Calculate debuff count for each opponent using the first guild member
-
-            if not st.session_state.my_team.empty:
-
-                ally = st.session_state.my_team.iloc[0]
+            for _, ally in st.session_state.my_team.iterrows():
 
                 disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
 
