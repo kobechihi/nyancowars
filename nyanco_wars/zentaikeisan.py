@@ -124,7 +124,7 @@ def main():
 
     advantage = st.checkbox("属性有利ですか？", key="advantage")
 
-    special_character = st.checkbox("複数体(500万以上 SSR武器 特定のキャラですか？", key="special_character")
+    special_character = st.checkbox("複数体(500万以上) SSR武器 特定のキャラですか？", key="special_character")
 
     high_power = st.checkbox("戦力3000万以上ですか？", key="high_power")
 
