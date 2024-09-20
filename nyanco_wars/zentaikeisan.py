@@ -182,7 +182,7 @@ def main():
 
         st.session_state.my_team = pd.concat([st.session_state.my_team, new_data], ignore_index=True)
 
-    st.header("対戦相手ギルドメンバー登録（3000万以上の相手には名前の後ろに#をつけてください")
+    st.header("対戦相手ギルドメンバー登録（3000万以上の相手には#をつけてください)")
 
     with st.form(key='opponent_team_form'):
 
