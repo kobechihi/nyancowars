@@ -240,9 +240,17 @@ def main():
 
                 kills_needed = calculate_kill_count(opponent['最高戦力'], ally['最高戦力'], disadvantage, advantage, special_character)
 
+                # 名前に#がついている場合、必要デバフ数に30を足す
+
+                if '#' in opponent['名前']:
+
+                    kills_needed += 30
+
                 results.append({
 
                     '対戦相手': opponent['名前'],
+
+                    '対戦相手戦力': opponent['最高戦力'],
 
                     '自チーム': ally['名前'],
 
