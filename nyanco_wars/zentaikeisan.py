@@ -190,7 +190,7 @@ def main():
 
     st.header("対戦相手ギルドメンバー登録")
 
-    st.markdown("<small>3000万以上の相手には名前の後ろに#をつけてください</small>", unsafe_allow_html=True)
+    st.markdown("3000万以上の相手には名前の後ろに#をつけてください", unsafe_allow_html=True)
 
     with st.form(key='opponent_team_form'):
 
