@@ -42,7 +42,7 @@ def calculate_kill_count(original_power, debuff_power, disadvantage, advantage, 
 
         kills += 1
 
-        if kills > 1000:  # 無限ループ防止
+        if kills > 460:  # 無限ループ防止
 
             return -1  # 到達不可能とする
 
@@ -112,7 +112,7 @@ def main():
 
     st.header("戦力計算[班]")
 
-    kill_count = st.number_input("KILL数を入力してください:", min_value=0, step=1, key="kill_count")
+    kill_count = st.number_input("デバフ数を入力してください:", min_value=0, step=1, key="kill_count")
 
     original_power = st.number_input("元の戦力を入力してください[万]:", min_value=0.0, step=0.1, key="original_power")
 
@@ -120,7 +120,7 @@ def main():
 
     advantage = st.checkbox("属性有利ですか？", key="advantage")
 
-    special_character = st.checkbox("複数体強化キャラがいるor特定のキャラですか？", key="special_character")
+    special_character = st.checkbox("複数体(500万以上 SSR武器 特定のキャラですか？", key="special_character")
 
     if st.button("戦力計算"):
 
@@ -150,7 +150,7 @@ def main():
 
     attributes = ["火", "水", "木", "火&他", "水&他", "木&他"]
 
-    st.header("自チームメンバー登録")
+    st.header("ギルドメンバー登録")
 
     with st.form(key='my_team_form'):
 
@@ -166,7 +166,7 @@ def main():
 
             attribute = st.selectbox("属性", attributes, key="my_attribute")
 
-        submit_button = st.form_submit_button(label='自チームに登録')
+        submit_button = st.form_submit_button(label='登録')
 
     if submit_button:
 
@@ -182,7 +182,7 @@ def main():
 
         st.session_state.my_team = pd.concat([st.session_state.my_team, new_data], ignore_index=True)
 
-    st.header("対戦相手チームメンバー登録")
+    st.header("対戦相手ギルドメンバー登録（3000万以上の相手には名前の後ろに#をつけてください")
 
     with st.form(key='opponent_team_form'):
 
@@ -198,7 +198,7 @@ def main():
 
             attribute = st.selectbox("属性", attributes, key="opp_attribute")
 
-        submit_button = st.form_submit_button(label='対戦相手チームに登録')
+        submit_button = st.form_submit_button(label='登録')
 
     if submit_button:
 
@@ -214,17 +214,17 @@ def main():
 
         st.session_state.opponent_team = pd.concat([st.session_state.opponent_team, new_data], ignore_index=True)
 
-    st.subheader("自チームメンバー")
+    st.subheader("ギルドメンバー")
 
     st.dataframe(st.session_state.my_team)
 
-    st.subheader("対戦相手チームメンバー")
+    st.subheader("対戦相手ギルドメンバー")
 
     st.dataframe(st.session_state.opponent_team)
 
     if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
 
-        st.header("必要デバフ数計算結果")
+        st.header("デバフ数計算結果")
 
         results = []
 
@@ -252,9 +252,9 @@ def main():
 
                     '対戦相手戦力': opponent['最高戦力'],
 
-                    '自チーム': ally['名前'],
+                    'ギルメン': ally['名前'],
 
-                    '必要デバフ数': kills_needed
+                    'デバフ数': kills_needed
 
                 })
 
