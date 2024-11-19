@@ -120,9 +120,15 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
         return None, None
 
-    all_my_members = my_team_df.index.tolist()
+    # インデックスをリセットして0からの連番にする
 
-    all_opponents = opponent_team_df.index.tolist()
+    my_team_df = my_team_df.reset_index(drop=True)
+
+    opponent_team_df = opponent_team_df.reset_index(drop=True)
+
+    all_my_members = list(range(len(my_team_df)))
+
+    all_opponents = list(range(len(opponent_team_df)))
 
     min_total_debuff = float('inf')
 
@@ -144,9 +150,9 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
                 opp_idx = opp_perm[i]
 
-                ally = my_team_df.iloc[my_idx]
+                ally = my_team_df.loc[my_idx]
 
-                opponent = opponent_team_df.iloc[opp_idx]
+                opponent = opponent_team_df.loc[opp_idx]
 
                 disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
 
@@ -358,7 +364,7 @@ def main():
 
         st.dataframe(results_df)
 
-        st.header("戦略提案")
+        st.header("最適な戦略提案")
 
         # 対戦相手の選択機能を追加
 
