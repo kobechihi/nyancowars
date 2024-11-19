@@ -120,8 +120,6 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
         return None, None
 
-    # インデックスをリセットして0からの連番にする
-
     my_team_df = my_team_df.reset_index(drop=True)
 
     opponent_team_df = opponent_team_df.reset_index(drop=True)
@@ -136,6 +134,8 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
     n_matches = min(len(all_my_members), len(all_opponents))
 
+    valid_combination_found = False
+
     for my_perm in permutations(all_my_members, n_matches):
 
         for opp_perm in permutations(all_opponents, n_matches):
@@ -143,6 +143,8 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
             total_debuff = 0
 
             current_matches = []
+
+            invalid_combination = False
 
             for i in range(n_matches):
 
@@ -174,9 +176,9 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
                 )
 
-                if kills_needed == -1:  # Skip impossible combinations
+                if kills_needed == -1:  # この組み合わせは不可能
 
-                    total_debuff = float('inf')
+                    invalid_combination = True
 
                     break
 
@@ -194,11 +196,19 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
                 })
 
-            if total_debuff < min_total_debuff:
+            if not invalid_combination:
 
-                min_total_debuff = total_debuff
+                valid_combination_found = True
 
-                best_matches = current_matches
+                if total_debuff < min_total_debuff:
+
+                    min_total_debuff = total_debuff
+
+                    best_matches = current_matches
+
+    if not valid_combination_found:
+
+        return None, None
 
     return best_matches, min_total_debuff
 
@@ -366,8 +376,6 @@ def main():
 
         st.header("最適な戦略提案")
 
-        # 対戦相手の選択機能を追加
-
         selected_opponents = st.multiselect(
 
             "戦略を計算したい対戦相手を選択してください:",
@@ -379,8 +387,6 @@ def main():
         if st.button("最適な組み合わせを計算"):
 
             if selected_opponents:
-
-                # 選択された対戦相手のデータフレームを作成
 
                 selected_opponent_df = st.session_state.opponent_team[
 
@@ -396,7 +402,7 @@ def main():
 
                 )
 
-                if best_matches:
+                if best_matches is not None:
 
                     st.write(f"最小合計デバフ数: {total_debuff}")
 
@@ -408,11 +414,11 @@ def main():
 
                 else:
 
-                    st.write("有効な組み合わせが見つかりませんでした。")
+                    st.error("有効な組み合わせが見つかりませんでした。戦力差が大きすぎる可能性があります。")
 
             else:
 
-                st.write("対戦相手を選択してください。")
+                st.warning("対戦相手を選択してください。")
 
 if __name__ == "__main__":
 
