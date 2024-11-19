@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 
 from itertools import permutations
- 
+
 def calculate_debuff(kill_count, original_power, disadvantage, advantage, special_character):
 
     original_level = 200  # 固定レベル
@@ -25,7 +25,7 @@ def calculate_debuff(kill_count, original_power, disadvantage, advantage, specia
         debuff_power *= 1.13  # 複数体強化キャラor特定のキャラの補正
 
     return debuff_power
- 
+
 def calculate_kill_count(original_power, debuff_power, disadvantage, advantage, special_character):
 
     if original_power <= 0:
@@ -47,7 +47,7 @@ def calculate_kill_count(original_power, debuff_power, disadvantage, advantage, 
         if kills > 460:  # 無限ループ防止
 
             return -1  # 到達不可能とする
- 
+
 def calculate_defense_time(location, teams):
 
     time_per_team = {
@@ -67,7 +67,7 @@ def calculate_defense_time(location, teams):
     seconds = total_seconds % 60
 
     return minutes, seconds
- 
+
 def is_disadvantage(attacker_attr, defender_attr):
 
     advantages = {
@@ -85,7 +85,7 @@ def is_disadvantage(attacker_attr, defender_attr):
     defender_main = defender_attr.split("&")[0]
 
     return advantages.get(attacker_main) == defender_main
- 
+
 def is_advantage(attacker_attr, defender_attr):
 
     advantages = {
@@ -103,11 +103,11 @@ def is_advantage(attacker_attr, defender_attr):
     defender_main = defender_attr.split("&")[0]
 
     return advantages.get(defender_main) == attacker_main
- 
+
 def is_special_character(attr):
 
     return "&" in attr
- 
+
 def calculate_optimal_matches(my_team_df, opponent_team_df):
 
     """
@@ -118,7 +118,7 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
 
     if len(my_team_df) == 0 or len(opponent_team_df) == 0:
 
-        return None
+        return None, None
 
     all_my_members = my_team_df.index.tolist()
 
@@ -195,7 +195,7 @@ def calculate_optimal_matches(my_team_df, opponent_team_df):
                 best_matches = current_matches
 
     return best_matches, min_total_debuff
- 
+
 def main():
 
     st.title("にゃんこウォーズ計算ツール")
@@ -314,52 +314,100 @@ def main():
 
     if not st.session_state.my_team.empty and not st.session_state.opponent_team.empty:
 
-              st.header("デバフ数計算結果")
-       results = []
-       for _, opponent in st.session_state.opponent_team.iterrows():
-           for _, ally in st.session_state.my_team.iterrows():
-               disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
-               advantage = is_advantage(opponent['属性'], ally['属性'])
-               special_character = is_special_character(opponent['属性'])
-               kills_needed = calculate_kill_count(
-                   opponent['最高戦力'],
-                   ally['最高戦力'],
-                   disadvantage,
-                   advantage,
-                   special_character
-               )
-               results.append({
-                   '対戦相手': opponent['名前'],
-                   '対戦相手戦力': opponent['最高戦力'],
-                   'ギルメン': ally['名前'],
-                   'デバフ数': kills_needed
-               })
-       results_df = pd.DataFrame(results)
-       st.dataframe(results_df)
-       st.header("最適な戦略提案")
-       # 対戦相手の選択機能を追加
-       selected_opponents = st.multiselect(
-           "戦略を計算したい対戦相手を選択してください:",
-           options=st.session_state.opponent_team['名前'].tolist()
-       )
-       if st.button("最適な組み合わせを計算"):
-           if selected_opponents:
-               # 選択された対戦相手のデータフレームを作成
-               selected_opponent_df = st.session_state.opponent_team[
-                   st.session_state.opponent_team['名前'].isin(selected_opponents)
-               ]
-               best_matches, total_debuff = calculate_optimal_matches(
-                   st.session_state.my_team,
-                   selected_opponent_df
-               )
-               if best_matches:
-                   st.write(f"最小合計デバフ数: {total_debuff}")
-                   st.write("推奨される組み合わせ:")
-                   best_matches_df = pd.DataFrame(best_matches)
-                   st.dataframe(best_matches_df)
-               else:
-                   st.write("有効な組み合わせが見つかりませんでした。")
-           else:
-               st.write("対戦相手を選択してください。")
+        st.header("デバフ数計算結果")
+
+        results = []
+
+        for _, opponent in st.session_state.opponent_team.iterrows():
+
+            for _, ally in st.session_state.my_team.iterrows():
+
+                disadvantage = is_disadvantage(opponent['属性'], ally['属性'])
+
+                advantage = is_advantage(opponent['属性'], ally['属性'])
+
+                special_character = is_special_character(opponent['属性'])
+
+                kills_needed = calculate_kill_count(
+
+                    opponent['最高戦力'], 
+
+                    ally['最高戦力'], 
+
+                    disadvantage, 
+
+                    advantage, 
+
+                    special_character
+
+                )
+
+                results.append({
+
+                    '対戦相手': opponent['名前'],
+
+                    '対戦相手戦力': opponent['最高戦力'],
+
+                    'ギルメン': ally['名前'],
+
+                    'デバフ数': kills_needed
+
+                })
+
+        results_df = pd.DataFrame(results)
+
+        st.dataframe(results_df)
+
+        st.header("最適な戦略提案")
+
+        # 対戦相手の選択機能を追加
+
+        selected_opponents = st.multiselect(
+
+            "戦略を計算したい対戦相手を選択してください:",
+
+            options=st.session_state.opponent_team['名前'].tolist()
+
+        )
+
+        if st.button("最適な組み合わせを計算"):
+
+            if selected_opponents:
+
+                # 選択された対戦相手のデータフレームを作成
+
+                selected_opponent_df = st.session_state.opponent_team[
+
+                    st.session_state.opponent_team['名前'].isin(selected_opponents)
+
+                ]
+
+                best_matches, total_debuff = calculate_optimal_matches(
+
+                    st.session_state.my_team,
+
+                    selected_opponent_df
+
+                )
+
+                if best_matches:
+
+                    st.write(f"最小合計デバフ数: {total_debuff}")
+
+                    st.write("推奨される組み合わせ:")
+
+                    best_matches_df = pd.DataFrame(best_matches)
+
+                    st.dataframe(best_matches_df)
+
+                else:
+
+                    st.write("有効な組み合わせが見つかりませんでした。")
+
+            else:
+
+                st.write("対戦相手を選択してください。")
+
 if __name__ == "__main__":
-   main()
+
+    main() 
