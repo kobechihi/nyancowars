@@ -358,7 +358,7 @@ def main():
 
         st.dataframe(results_df)
 
-        st.header("最適な戦略提案")
+        st.header("戦略提案")
 
         # 対戦相手の選択機能を追加
 
